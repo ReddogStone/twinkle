@@ -1,0 +1,142 @@
+<html>
+<head>
+
+<title>Twinkle</title>
+
+<script src="utils.js" type="text/javascript"></script>
+<script src="state-monad.js" type="text/javascript"></script>
+<script src="entities.js" type="text/javascript"></script>
+<script src="rect.js" type="text/javascript"></script>
+<script src="point.js" type="text/javascript"></script>
+<script src="size.js" type="text/javascript"></script>
+<script src="geometry.js" type="text/javascript"></script>
+<script src="ui-utils.js" type="text/javascript"></script>
+<script src="movement.js" type="text/javascript"></script>
+<script src="button.js" type="text/javascript"></script>
+<script src="colors.js" type="text/javascript"></script>
+<script src="sound.js" type="text/javascript"></script>
+<script src="text-helpers.js" type="text/javascript"></script>
+
+<script src="default-state.js" type="text/javascript"></script>
+<script src="menu-state.js" type="text/javascript"></script>
+<script src="help-state.js" type="text/javascript"></script>
+<script src="game-state.js" type="text/javascript"></script>
+<script src="end-game-state.js" type="text/javascript"></script>
+<script src="final-state.js" type="text/javascript"></script>
+
+<script src="seedrandom-master/seedrandom.min.js" type="text/javascript"></script>
+
+<script>
+
+window.requestAnimFrame = (function(callback){
+	return window.requestAnimationFrame ||
+	window.webkitRequestAnimationFrame ||
+	window.mozRequestAnimationFrame ||
+	window.oRequestAnimationFrame ||
+	window.msRequestAnimationFrame ||
+	function(callback){
+		window.setTimeout(callback, 1000 / 60);
+	};
+})();
+
+function getMousePos(canvas, evt) {
+	var rect = canvas.getBoundingClientRect();
+	return { x: evt.clientX - rect.left, y: evt.clientY - rect.top };
+}
+
+function onload() {
+	var canvas = document.getElementById('mainCanvas');
+	var context = canvas.getContext('2d');
+
+	Sound.init({
+		connect: {
+			sources: [
+				{ url: 'sounds/connect-2.wav' },
+				{ url: 'sounds/connect-3.wav' },
+			],
+			volume: 0.15
+		},
+		select: {
+			sources: [
+				{ url: 'sounds/select-1.wav' }
+			],
+			volume: 0.3
+		},
+		win: {
+			sources: [
+				{ url: 'sounds/win.wav' }
+			],
+			volume: 0.15
+		},
+		lose: {
+			sources: [
+				{ url: 'sounds/lose.wav' }
+			],
+			volume: 0.15
+		},
+		background: {
+			sources: [
+				{ url: 'music/background1.ogg', volume: 0.15 },
+				{ url: 'music/background2.ogg', volume: 0.3 }
+			],
+			loop: true,
+			onEnded: 'background'
+		}
+	});
+
+	Math.seedrandom();
+
+	Sound.play('background');
+
+	var game = MenuState.init(canvas);
+	var world = game.world;
+
+	canvas.addEventListener('mousedown', function(event) {
+		var res = game.onMouseDown(getMousePos(canvas, event), world);
+		if (res.next) {
+			game = res.next(canvas, res.world);
+			world = game.world;
+		} else {
+			world = res.world;
+		}
+	}, false);
+	document.addEventListener('mouseup', function(event) {
+		var res = game.onMouseUp(getMousePos(canvas, event), world);
+		if (res.next) {
+			game = res.next(canvas, res.world);
+			world = game.world;
+		} else {
+			world = res.world;
+		}
+	}, false);
+	canvas.addEventListener('mousemove', function(event) {
+		world = game.onMouseMove(getMousePos(canvas, event), world);
+	}, false);
+
+	var lastTime = performance.now();
+
+	var gradient = context.createLinearGradient(0, -5 * canvas.height, 0, canvas.height);
+	gradient.addColorStop(0, Colors.BACKGROUND.primary);
+	gradient.addColorStop(1, Colors.BACKGROUND.secondary);
+
+	var animate = function() {
+		var time = performance.now();
+		var deltaTime = time - lastTime;
+		lastTime = time;
+
+		context.fillStyle = gradient;
+		context.fillRect(0, 0, canvas.width, canvas.height);
+
+		world = game.frame(context, world, deltaTime * 0.001, time * 0.001);
+
+		requestAnimFrame(animate);
+	};
+	animate();
+}
+
+</script>
+</head>
+<body onload="onload();">
+	<canvas id="mainCanvas" width="800" height="600" style="border-width:10px"></canvas>
+</body>
+</html>
