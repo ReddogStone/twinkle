@@ -46,7 +46,6 @@ var GameState = (function(exports) {
 		var halfConnectorId = Object.keys(halfConnectors)[0];
 		if (halfConnectorId && highlightedId) {
 			var halfConnector = halfConnectors[halfConnectorId];
-			var highlightedGeom = geometries[highlightedId];
 
 			var begin = halfConnector.begin;
 			var end = highlightedId;
@@ -129,96 +128,100 @@ var GameState = (function(exports) {
 	var END_GAME_OFF = 600;
 
 	function getLoseText() {
-		return Entity.first({
-			id: 'LoseText',
-			pos: {x: 400, y: END_GAME_OFF + END_GAME_TOP},
-			z: Layers.TEXT + 1,
-			geometry: { type: 'text', text: 'YOU LOSE!', size: 3, align: 'center', border: 0 },
-			color: Colors.LOSE_TEXT,
-			target: {x: 400, y: END_GAME_TOP}
-		}).bind(Entity.add({
-			id: 'LoseText2',
-			pos: {x: 400, y: END_GAME_OFF + END_GAME_TOP + 70},
-			z: Layers.TEXT + 1,
-			geometry: { type: 'text', text: 'No triangles! Click to restart', size: 2, align: 'center', border: 0 },
-			color: Colors.LOSE_TEXT,
-			target: {x: 400, y: END_GAME_TOP + 70}
-		})).bind(Entity.add({
-			id: 'loseCloud',
-			pos: {x: 400, y: END_GAME_OFF + END_GAME_TOP + 60},
-			target: {x: 400, y: END_GAME_TOP + 60},
-			geometry: {
-				type: 'cloud',
-				sx: 300,
-				sy: 200,
-				circles: Geom.createCloud(8, Math.random()),
-				border: 5
+		return [
+			{
+				id: 'LoseText',
+				pos: {x: 400, y: END_GAME_OFF + END_GAME_TOP},
+				z: Layers.TEXT + 1,
+				geometry: { type: 'text', text: 'YOU LOSE!', size: 3, align: 'center', border: 0 },
+				color: Colors.LOSE_TEXT,
+				target: {x: 400, y: END_GAME_TOP}
 			},
-			color: Colors.LOSE_CLOUD,
-			z: Layers.TEXT
-		}));
+			{
+				id: 'LoseText2',
+				pos: {x: 400, y: END_GAME_OFF + END_GAME_TOP + 70},
+				z: Layers.TEXT + 1,
+				geometry: { type: 'text', text: 'No triangles! Click to restart', size: 2, align: 'center', border: 0 },
+				color: Colors.LOSE_TEXT,
+				target: {x: 400, y: END_GAME_TOP + 70}
+			},
+			{
+				id: 'loseCloud',
+				pos: {x: 400, y: END_GAME_OFF + END_GAME_TOP + 60},
+				target: {x: 400, y: END_GAME_TOP + 60},
+				geometry: {
+					type: 'cloud',
+					sx: 300,
+					sy: 200,
+					circles: Geom.createCloud(8, Math.random()),
+					border: 5
+				},
+				color: Colors.LOSE_CLOUD,
+				z: Layers.TEXT
+			}
+		];
 	}
 
 	function getWinText() {
-		return Entity.first({
-			id: 'WinText',
-			pos: {x: 400, y: END_GAME_OFF + END_GAME_TOP},
-			z: Layers.TEXT + 1,
-			geometry: { type: 'text', text: 'WELL DONE!', size: 3, align: 'center', border: 0 },
-			color: Colors.LOSE_TEXT,
-			target: {x: 400, y: END_GAME_TOP}
-		}).bind(Entity.add({
-			id: 'WinText2',
-			pos: {x: 400, y: END_GAME_OFF + END_GAME_TOP + 70},
-			z: Layers.TEXT + 1,
-			geometry: { type: 'text', text: 'Click to continue', size: 2, align: 'center', border: 0 },
-			color: Colors.LOSE_TEXT,
-			target: {x: 400, y: END_GAME_TOP + 70}
-		})).bind(Entity.add({
-			id: 'loseCloud',
-			pos: {x: 400, y: END_GAME_OFF + END_GAME_TOP + 60},
-			target: {x: 400, y: END_GAME_TOP + 60},
-			geometry: {
-				type: 'cloud',
-				sx: 300,
-				sy: 200,
-				circles: Geom.createCloud(8, Math.random()),
-				border: 5
+		return [
+			{
+				id: 'WinText',
+				pos: {x: 400, y: END_GAME_OFF + END_GAME_TOP},
+				z: Layers.TEXT + 1,
+				geometry: { type: 'text', text: 'WELL DONE!', size: 3, align: 'center', border: 0 },
+				color: Colors.LOSE_TEXT,
+				target: {x: 400, y: END_GAME_TOP}
 			},
-			color: Colors.LOSE_CLOUD,
-			z: Layers.TEXT
-		}));
+			{
+				id: 'WinText2',
+				pos: {x: 400, y: END_GAME_OFF + END_GAME_TOP + 70},
+				z: Layers.TEXT + 1,
+				geometry: { type: 'text', text: 'Click to continue', size: 2, align: 'center', border: 0 },
+				color: Colors.LOSE_TEXT,
+				target: {x: 400, y: END_GAME_TOP + 70}
+			},
+			{
+				id: 'loseCloud',
+				pos: {x: 400, y: END_GAME_OFF + END_GAME_TOP + 60},
+				target: {x: 400, y: END_GAME_TOP + 60},
+				geometry: {
+					type: 'cloud',
+					sx: 300,
+					sy: 200,
+					circles: Geom.createCloud(8, Math.random()),
+					border: 5
+				},
+				color: Colors.LOSE_CLOUD,
+				z: Layers.TEXT
+			}
+		];
 	}
 
-	function createStars(initWorld, width, height, starCount, seed) {
+	function createStars(width, height, starCount, seed) {
 		var prng = new Math.seedrandom(seed);
 
-		var accumulator = Entity.start();
+		var res = [];
 		for (var i = 0; i < starCount; i++) {
 			var starPos = { 
 				x: width * 0.2 + prng() * width * 0.6,
 				y: height * 0.2 + prng() * height * 0.5,
 			};
-			var currentWorld = accumulator.execState(initWorld);
 
-			if (Utils.someObj(currentWorld.pos, function(id, pos) {
-				return (Point.dist(pos, starPos) < 3 * STAR_RADIUS);
-			})) {
+			var invalidPos = res.some(function(entity) {
+				return (Point.dist(entity.pos, starPos) < 3 * STAR_RADIUS);
+			});
+			if (invalidPos) {
 				i--;
 				continue;
 			}
 
-			var star = Utils.mergeObjects(
-				UIUtils.animatedStar('star' + i, starPos, Layers.STARS, STAR_RADIUS, STAR_BORDER, prng()),
-				{
-					highlightable: true,
-					star: true
-				}
-			);
-			accumulator = accumulator.bind(Entity.add(star));
+			var star = UIUtils.animatedStar('star' + i, starPos, 
+				Layers.STARS, STAR_RADIUS, STAR_BORDER, prng())
+			.set('highlightable', true)
+			.set('star', true);
+			res.push(star);
 		}
-
-		return accumulator;
+		return res;
 	}
 
 	function createDecorationStarAnimation(frequency, amplitude, offset) {
@@ -236,56 +239,56 @@ var GameState = (function(exports) {
 	}
 
 	function createDecorations(initWorld, width, height, seed) {
-		return function() {
-			var prng = new Math.seedrandom(seed);
+		var prng = new Math.seedrandom(seed);
 
-			var accumulator = Entity.start();
-			for (var i = 0; i < DECORATION_COUNT; i++) {
-				var starPos = {
-					x: prng() * width,
-					y: prng() * height,
-				};
+		var res = [];
+		for (var i = 0; i < DECORATION_COUNT; i++) {
+			var starPos = {
+				x: prng() * width,
+				y: prng() * height,
+			};
 
-				var off = prng() * 10;
+			var off = prng() * 10;
 
-				accumulator = accumulator.bind(Entity.add({
-					id: 'decorationStar' + i,
-					pos: starPos,
-					z: Layers.DECORATIONS,
-					geometry: {
-						type: 'star',
-						radius: STAR_RADIUS * 0.1,
-						border: 0,
-						points: Geom.createStar(4, prng())
-					},
-					color: Colors.STAR,
-					animation: createDecorationStarAnimation(prng() * 0.02 + 0.03, 2, off)
-				}));
-			}
+			res.push({
+				id: 'decorationStar' + i,
+				pos: starPos,
+				z: Layers.DECORATIONS,
+				geometry: {
+					type: 'star',
+					radius: STAR_RADIUS * 0.1,
+					border: 0,
+					points: Geom.createStar(4, prng())
+				},
+				color: Colors.STAR,
+				animation: createDecorationStarAnimation(prng() * 0.02 + 0.03, 2, off)
+			});
+		}
 
-			return accumulator;
-		};
+		return res;
 	}
 
-	exports.frame = function(context, world, deltaTime, time) {
+	exports.update = function(world, deltaTime, time) {
 		var radii = Utils.mapObj(world.geometry, function(id, geometry) {
 			return geometry.radius;
 		});
 		var newRadii = followTarget(deltaTime, world.targetRadius, radii);
 		var newGeometries = Utils.mapObj(world.geometry, function(id, geometry) {
-			return Utils.mergeObjects(geometry, {
-				radius: newRadii[id]
-			});
+			return Utils.setPropObj(geometry, 'radius', newRadii[id]);
 		});
 		
-		world = Utils.mergeObjects(world, {
-			targetRadius: Utils.mergeObjects(world.targetRadius, determineStarStrength(world.starSet))
-		}, {
-			geometry: Utils.mergeObjects(world.geometry, newGeometries)
-		});
+		var updates = {
+			targetRadius: determineStarStrength(world.starSet),
+			geometry: newGeometries
+		};
+		var defaultUpdates = DefaultState.update(world, deltaTime, time);
+		return {
+			entities: Utils.mergeObjects(updates, defaultUpdates.entities)
+		};
+	}
 
-		world = DefaultState.frame(context, world, deltaTime, time);
-
+	exports.draw = function(context, world) {
+		DefaultState.draw(context, world);
 		var currentScore = Object.keys(world.connector).length;
 		Geom.drawText(context, 'Level Score: ' + currentScore,
 			Point.make(670, 510), 1.3, 'center', 0, Colors.Button.TEXT.primary);
@@ -293,8 +296,6 @@ var GameState = (function(exports) {
 			Point.make(670, 535), 1.3, 'center', 0, Colors.Button.TEXT.primary);
 		Geom.drawText(context, 'Total Score: ' + (world.score + currentScore),
 			Point.make(670, 560), 1.3, 'center', 0, Colors.Button.TEXT.primary);
-
-		return world;
 	}
 
 	exports.firstLevel = function(canvas, world) {
@@ -306,82 +307,55 @@ var GameState = (function(exports) {
 		var group2 = starCount - group1;
 		var maxConnectionCount = group1 * group2;
 
-		var world = {
-			id: [],
-			pos: {},
-			geometry: {},
-			color: {},
-			velocity: {},
-			draggable: {},
-			dragOffset: {},
-			target: {},
-			targetRadius: {},
-			highlightable: {},
-			highlighted: {},
-			connector: {},
-			halfConnector: {},
-			starSet: {},
-			neighbor: {},
-			z: {},
-			button: {},
-			animation: {},
-			star: {},
-			possibleScore: maxConnectionCount
-		};
+		var world = Entity.accumulator()
+		.add(createStars(canvas.width, canvas.height, starCount, seed))
+		.add(createDecorations(world, canvas.width, canvas.height, seed))
+		.add(Button.make('Restart', Point.make(120, 550), Size.make(120, 90), 'Restart Level', function() {
+			return function(canvas, world) {
+				return exports.init(canvas, world, starCount, world.score);
+			};
+		}, seed))
+		.add(Button.make('NextLevel', Point.make(385, 550), Size.make(120, 90), 'Next Level', function() {
+			return function(canvas, world) {
+				var score = world.score + Object.keys(world.connector).length;
+				if (starCount === MAX_LEVEL) {
+					return FinalState.init(canvas, world, score);
+				} else {
+					return exports.init(canvas, world, starCount + 1, score);
+				}
+			};
+		}, seed))
+		.add(UIUtils.animatedCloud('Score', Point.make(670, 550), Size.make(140, 100), 0))
+		.apply(Entity.initSystem('pos', 'geometry', 'color', 'velocity', 
+			'draggable', 'dragOffset', 'target', 'targetRadius', 'highlighted', 'highlightable',
+			'connector', 'halfConnector', 'starSet', 'neighbor', 'z', 'button', 'animation',
+			'star'));
 
-
-		world = createStars(world, canvas.width, canvas.height, starCount, seed)
-		.bind(createDecorations(world, canvas.width, canvas.height, seed))
-		.bind(Button.add('Restart', Point.make(120, 550), 
-			Size.make(120, 90), 'Restart Level', function() {
-				return function(canvas, world) {
-					return exports.init(canvas, world, starCount, world.score);
-				};
-			}, seed))
-		.bind(Button.add('NextLevel', Point.make(385, 550), 
-			Size.make(120, 90), 'Next Level', function() {
-				return function(canvas, world) {
-					var score = world.score + Object.keys(world.connector).length;
-					if (starCount === MAX_LEVEL) {
-						return FinalState.init(canvas, world, score);
-					} else {
-						return exports.init(canvas, world, starCount + 1, score);
-					}
-				};
-			}, seed))
-		.bind(Entity.add(UIUtils.animatedCloud('Score', Point.make(670, 550), Size.make(140, 100), 0)))
-		.execState(world);
-		world = Utils.mergeObjects(world, { score: score });
+		world = Utils.setPropObj(world, 'possibleScore', maxConnectionCount);
+		world = Utils.setPropObj(world, 'score', score);
 
 		var onMouseDown = function(mousePos, world) {
-			world = DefaultState.onMouseDown(mousePos, world);
+			var updates = DefaultState.onMouseDown(mousePos, world);
 
 			var halfConnector = beginConnection(mousePos, world);
 			if (halfConnector) {
-				world = Entity.first(halfConnector).execState(world);
+				updates.entities = Entity.add(updates.entities, halfConnector);
 			}
-			return {
-				world: world,
-				newGame: false
-			};
+
+			return updates;
 		};
 
 		var onMouseUp = function(mousePos, world) {
-			var res = DefaultState.onMouseUp(mousePos, world);
-			world = res.world;
-			buttonEvents = res.buttonEvents;
-			var buttonEvent = Utils.firstObj(buttonEvents, function() { return true; });
-			if (buttonEvent) {
-				return {
-					world: world,
-					next: buttonEvent
-				};
+			var updates = DefaultState.onMouseUp(mousePos, world);
+			buttonEvents = updates.buttonEvents;
+			var answer = Utils.firstObj(buttonEvents, function() { return true; });
+			if (answer) {
+				updates.next = anser;
+				return updates;
 			}
 
 			var halfConnectors = world.halfConnector;
-			world = Utils.mergeObjects(world, {
-				halfConnector: {}
-			});
+			updates.entities = Utils.setPropObj(updates.entities, 'halfConnector', {});
 
 			var highlightedStars = Utils.filterObj(world.highlighted, function(id) {
 				return world.star[id];
@@ -390,29 +364,26 @@ var GameState = (function(exports) {
 				world.neighbor, world.geometry);
 			if (connection) {
 				Sound.play('connect');
-				world = Entity.first(createConnector(connection)).execState(world);
+				updates.entities = Entity.add(updates.entities, createConnector(connection));
 
 				var addNeighbors = newNeighbors(connection, world.neighbor);
-				world = Utils.mergeObjects(world, {
-					starSet: Utils.mergeObjects(world.starSet, newSets(connection, world.starSet)),
-					neighbor: Utils.mergeObjects(world.neighbor, addNeighbors)
+				updates.entities = Utils.mergeObjects(updates.entities, {
+					starSet: newSets(connection, world.starSet),
+					neighbor: addNeighbors
 				});
 
 				var common = commonNeighbor(world.neighbor[connection.begin], 
 					world.neighbor[connection.end]);
 				if (common) {
 					Sound.play('lose');
-					world = getLoseText().execState(world);
-
-					return {
-						world: Utils.mergeObjects(world, {
-							highlighted: Utils.mergeObjects(world.highlighted, 
-								getHighlightedTriangle(common, connection.begin, connection.end))
-						}),
-						next: function(canvas, world) {
-							return EndGameState.init(canvas, world, starCount, world.score)
-						}
+					updates.entities = Entity.add(updates.entities, getLoseText());
+					updates.entities = Utils.mergeObjects(updates.entities, {
+						highlighted: getHighlightedTriangle(common, connection.begin, connection.end)
+					});
+					updates.next = function(canvas, world) {
+						return EndGameState.init(canvas, world, starCount, world.score)
 					};
+					return updates;
 				}
 
 				var group1 = Math.floor(starCount * 0.5);
@@ -421,33 +392,28 @@ var GameState = (function(exports) {
 				var currentScore = Object.keys(world.connector).length;
 				if (currentScore === maxConnectionCount) {
 					Sound.play('win');
-					world = getWinText().execState(world);
-					return {
-						world: world,
-						next: function(canvas, world) {
-							return EndGameState.init(canvas, world, starCount + 1,
-								world.score + currentScore)
-						}
+					updates.entities = Entity.add(updates.entities, getWinText());
+					updates.next = function(canvas, world) {
+						return EndGameState.init(canvas, world, starCount + 1,
+							world.score + currentScore)
 					};
+					return updates;
 				}
 			}
 
-			return {
-				world: world,
-				gameOver: false
-			};
+			return updates;
 		};
 
 		var onMouseMove = function(mousePos, world) {
-			world = DefaultState.onMouseMove(mousePos, world);
-			return Utils.mergeObjects(world, {
-				halfConnector: Utils.mapObj(world.halfConnector, function(id, halfConnector) {
+			updates = DefaultState.onMouseMove(mousePos, world);
+			updates.entities = Utils.setPropObj(updates.entities, 'halfConnector',
+				Utils.mapObj(world.halfConnector, function(id, halfConnector) {
 					return {
 						begin: halfConnector.begin,
 						end: Point.clone(mousePos)
 					};
-				})
-			});
+				}));
+			return updates;
 		};
 
 		return {
@@ -455,7 +421,8 @@ var GameState = (function(exports) {
 			onMouseDown: onMouseDown,
 			onMouseUp: onMouseUp,
 			onMouseMove: onMouseMove,
-			frame: exports.frame
+			update: exports.update,
+			draw: exports.draw
 		};
 	}
 	

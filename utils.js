@@ -27,6 +27,9 @@ var Utils = (function(exports) {
 	};
 
 	exports.filterObj = function(obj, func, thisArg) {
+		if (!obj) {
+			throw new Error('No obj');
+		}
 		var keys = Object.keys(obj);
 		var l = keys.length;
 		var res = {};
@@ -42,6 +45,11 @@ var Utils = (function(exports) {
 	exports.firstObj = function(obj, func, thisArg) {
 		var keys = Object.keys(obj);
 		var l = keys.length;
+
+		if (!func) {
+			return (l > 0) ? obj[keys[0]] : undefined;
+		}
+
 		for (var i = 0; i < l; i++) {
 			var key = keys[i];
 			if (func.call(thisArg, key, obj[key], obj)) {
@@ -54,6 +62,11 @@ var Utils = (function(exports) {
 	exports.firstKeyObj = function(obj, func, thisArg) {
 		var keys = Object.keys(obj);
 		var l = keys.length;
+
+		if (!func) {
+			return (l > 0) ? keys[0] : undefined;
+		}
+
 		for (var i = 0; i < l; i++) {
 			var key = keys[i];
 			if (func.call(thisArg, key, obj[key], obj)) {
@@ -101,6 +114,12 @@ var Utils = (function(exports) {
 		}, {});
 	};
 
+	exports.setPropObj = function(obj, key, value) {
+		var res = Utils.mapObj(obj, function(_, v) { return v; });
+		res[key] = value;
+		return res;
+	};
+
 	exports.transposeObj = function(obj) {
 		var res = {};
 		exports.forEachObj(obj, function(key, value) {
@@ -108,6 +127,12 @@ var Utils = (function(exports) {
 			res[value].push(key);
 		});
 		return res;
+	};
+
+	exports.values = function(obj) {
+		return Object.keys(obj).map(function(key) {
+			return obj[key];
+		});
 	};
 
 	return exports;

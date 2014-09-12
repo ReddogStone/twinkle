@@ -2,22 +2,8 @@ var HelpState = (function(exports) {
 	var BUTTON_SIZE = Size.make(150, 100);
 
 	exports.init = function(canvas) {
-		var world = {
-			id: [],
-			pos: {},
-			geometry: {},
-			color: {},
-			highlighted: {},
-			highlightable: {},
-			target: {},
-			z: {},
-			button: {},
-			animation: {}
-		};
-
-		var accumulator = Entity.start();
-		world = accumulator
-		.bind(TextHelper.addLines([
+		var world = Entity.accumulator()
+		.add(TextHelper.makeLines([
 			'Welcome to Twinkle',
 			'This is a game about making connections.',
 			'In fact you will be connecting not only worlds',
@@ -28,44 +14,31 @@ var HelpState = (function(exports) {
 			'NEVER MAKE TRIANGLES!',
 			'Triangles formed by intersecting lines are ok, though.'
 		]))
-		.bind(Button.add('start', Point.make(400, 530), BUTTON_SIZE, 'OK, I got it', function() {
+		.add(Button.make('start', Point.make(400, 530), BUTTON_SIZE, 'OK, I got it', function() {
 			return function(canvas, world) {
 				return GameState.firstLevel(canvas, world);
 			}
 		}))
-		.execState(world);
+		.apply(Entity.initSystem('pos', 'geometry', 'color', 'highlighted', 'highlightable',
+			'target', 'z', 'button', 'animation'));
 
 		return {
 			world: world,
-			onMouseDown: function(mousePos, world) {
-				return {
-					world: DefaultState.onMouseDown(mousePos, world)
-				};
-			},
+			onMouseDown: DefaultState.onMouseDown,
 			onMouseUp: function(mousePos, world) {
-				var releasedButtons = Button.getReleased(world.button);
-				world = Utils.mergeObjects(world, {
-					button: Utils.mergeObjects(world.button, releasedButtons),
-					color: Utils.mergeObjects(world.color,
-						Button.getColors(releasedButtons, world.highlighted))
-				});
-				var answers = Utils.mapObj(releasedButtons, function(id, button) {
-					if (world.highlighted[id] && button.onClick) {
-						return button.onClick();
-					}
-				});
-				var answer = Utils.firstObj(answers, function() { return true; });
+				var res = DefaultState.onMouseUp(mousePos, world);
+				var answer = Utils.firstObj(res.buttonEvents, function() { return true; });
 				if (answer) {
+					Sound.play('select');
 					return {
 						next: answer
 					};
 				}
-				return {
-					world: world
-				};
+				return res;
 			},
 			onMouseMove: DefaultState.onMouseMove,
-			frame: DefaultState.frame
+			update: DefaultState.update,
+			draw: DefaultState.draw
 		};
 	};
 
