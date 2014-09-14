@@ -1,59 +1,49 @@
 var ConnectorSystem = (function(exports) {
-	exports = Object.create(ComponentSystem);
-
-	exports.onMouseDown = function(world, mousePos) {
-		var hovered = UIUtils.getMouseOffsets(mousePos, world.pos, world.geometry, world.star);
+	exports.onMouseDown = function(state, mousePos) {
+		var hovered = UIUtils.getMouseOffsets(mousePos, state.pos, state.geometry, state.star);
 		var hoveredId = Object.keys(hovered)[0];
 		if (hoveredId) {
-			return {
-				events: [{
-					type: 'connection_started',
-					startId: hoveredId,
-					mousePos: Point.clone(mousePos)
-				}]
-			};
+			return Query.event({
+				type: 'connection_started',
+				startId: hoveredId,
+				mousePos: Point.clone(mousePos)
+			});
 		}
-		return {};
 	};
 
-	exports.onMouseUp = function(world, mousePos) {
-		var hovered = UIUtils.getMouseOffsets(mousePos, world.pos, world.geometry, world.star);
+	exports.onMouseUp = function(state, mousePos) {
+		var hovered = UIUtils.getMouseOffsets(mousePos, state.pos, state.geometry, state.star);
 		var hoveredId = Object.keys(hovered)[0];
-		var halfConnectorId = Object.keys(world.halfConnector)[0];
-		if (halfConnectorId && hoveredId) {
-			var halfConnector = world.halfConnector[halfConnectorId];
+		var halfConnectorId = Object.keys(state.halfConnector)[0];
+		if (halfConnectorId) {
+			if (hoveredId) {
+				var halfConnector = state.halfConnector[halfConnectorId];
 
-			var begin = halfConnector.begin;
-			var end = hoveredId;
-			if ((begin !== end) && !(world.neighbor[begin] && world.neighbor[begin][end]) ) {
-				return { 
-					events: [{
+				var begin = halfConnector.begin;
+				var end = hoveredId;
+				if ((begin !== end) && !(state.neighbor[begin] && state.neighbor[begin][end]) ) {
+					return Query.event({
 						type: 'connection_closed',
 						begin: begin,
 						end: end
-					}]
-				};
+					});
+				}
 			}
-		}
 
-		return {
-			events: [{
+			return Query.event({
 				type: 'connection_aborted'
-			}]
-		};
+			});
+		}
 	};
 
 	exports.onMouseMove = function(world, mousePos) {
-		return {
-			updates: {
-				halfConnector: Utils.mapObj(world.halfConnector, function(id, halfConnector) {
-					return {
-						begin: halfConnector.begin,
-						end: Point.clone(mousePos)
-					};
-				})
-			}
-		};
+		var halfConnector = Utils.mapObj(world.halfConnector, function(id, halfConnector) {
+			return {
+				begin: halfConnector.begin,
+				end: Point.clone(mousePos)
+			};
+		});
+		return Query.upsertComponents('halfConnector', halfConnector);
 	};
 
 	return exports;

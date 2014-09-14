@@ -222,8 +222,8 @@ var STAR_RADIUS = 15;
 		return group1 * group2;
 	}
 
-	function draw(context, world) {
-		DefaultScreen.draw(context, world);
+	function draw(world, context) {
+		DefaultScreen.draw(world, context);
 		var currentScore = Object.keys(world.connector).length;
 		Geom.drawText(context, 'Level Score: ' + currentScore,
 			Point.make(670, 510), 1.3, 'center', 0, Colors.Button.TEXT.primary);
@@ -293,12 +293,10 @@ var STAR_RADIUS = 15;
 	}
 
 	exports.firstLevel = function(canvas) {
-		return exports.init({canvas: canvas, score: 0}, { starCount: 3, seed: 10 });
+		return exports.init(canvas, {score: 0}, { starCount: 3, seed: 10 });
 	};
 
-	exports.init = function(world, level) {
-		var canvas = world.canvas;
-
+	exports.init = function(canvas, world, level) {
 		var myWorld = Entity.accumulator()
 		.add(createStars(canvas.width, canvas.height, level.starCount, level.seed))
 		.add(createDecorations(world, canvas.width, canvas.height, level.seed))
@@ -327,23 +325,19 @@ var STAR_RADIUS = 15;
 			'connector', 'halfConnector', 'starSet', 'neighbor', 'z', 'button', 'animation',
 			'star'));
 
-		myWorld.canvas = canvas;
 		myWorld.score = world.score;
-		myWorld.global = world.global;
 		myWorld.level = level;
 		myWorld.possibleScore = calculateMaxConnectionCount(level.starCount);
 
 		return {
-			draw: draw,
-			world: myWorld,
-			onEvent: onEvent,
-			systems: [
-				AnimationSystem,
-				HighlightSystem,
-				ButtonSystem,
-				ConnectorSystem,
-				MovementSystem
-			]
+			screen: DefaultScreen.make([
+					AnimationSystem,
+					HighlightSystem,
+					ButtonSystem,
+					ConnectorSystem,
+					MovementSystem
+				], { draw: draw, onEvent: onEvent }),
+			state: myWorld
 		};
 	};
 

@@ -1,6 +1,4 @@
 var ButtonSystem = (function(exports) {
-	exports = Object.create(ComponentSystem);
-
 	exports.onMouseDown = function(world, mousePos) {
 		var hovered = UIUtils.getMouseOffsets(mousePos, world.pos, world.geometry, world.button);
 		var pressedButtons = Utils.mapObj(hovered, function(id) {
@@ -14,12 +12,11 @@ var ButtonSystem = (function(exports) {
 				return hovered[id] ? Colors.Button.PRESSED : Colors.Button.NORMAL;
 			})
 		);
-		return {
-			updates: {
-				button: pressedButtons,
-				color: colors
-			}
-		}
+
+		return [
+			Query.upsertComponents('button', pressedButtons),
+			Query.upsertComponents('color', colors)
+		];
 	};
 
 	exports.onMouseUp = function(world, mousePos) {
@@ -33,37 +30,32 @@ var ButtonSystem = (function(exports) {
 		var reactingButtons = Utils.filterObj(releasedButtons, function(id, button) {
 			return hovered[id] && button.onClick;
 		});
+		var colors = Utils.mapObj(releasedButtons, function(id, button) {
+			return hovered[id] ? Colors.Button.HOVERED : Colors.Button.NORMAL;
+		});
 
-		return {
-			updates: {
-				button: releasedButtons,
-				color: Utils.mapObj(releasedButtons, function(id, button) {
-					return hovered[id] ? 
-						(button.pressed ? Colors.Button.PRESSED : Colors.Button.HOVERED) :
-						Colors.Button.NORMAL;
-				})
-			},
-			events: Object.keys(reactingButtons).map(function(id) {
-				return {
-					type: 'button_clicked',
-					id: id,
-					value: reactingButtons[id].onClick()
-				};
-			})
-		};
+		var events = Object.keys(reactingButtons).map(function(id) {
+			return Query.event({
+				type: 'button_clicked',
+				id: id,
+				value: reactingButtons[id].onClick()
+			});
+		});
+
+		return [
+			Query.upsertComponents('button', releasedButtons),
+			Query.upsertComponents('color', colors),
+		].concat(events);
 	};
 
 	exports.onMouseMove = function(world, mousePos) {
 		var hovered = UIUtils.getMouseOffsets(mousePos, world.pos, world.geometry, world.button);
-		return {
-			updates: {
-				color: Utils.mapObj(world.button, function(id, button) {
-					return hovered[id] ? 
-						(button.pressed ? Colors.Button.PRESSED : Colors.Button.HOVERED) :
-						Colors.Button.NORMAL;
-				})
-			}
-		}
+		var colors = Utils.mapObj(world.button, function(id, button) {
+			return hovered[id] ? 
+				(button.pressed ? Colors.Button.PRESSED : Colors.Button.HOVERED) :
+				Colors.Button.NORMAL;
+		});
+		return Query.upsertComponents('color', colors);
 	};
 
 	return exports;

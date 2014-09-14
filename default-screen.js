@@ -1,86 +1,157 @@
 var DefaultScreen = (function(exports) {
-	exports.update = function(world, deltaTime, time) {
-		var animationRes = {};
-		Utils.forEachObj(world.animation, function(id, animations) {
-			for (var i = 0; i < animations.length; i++) {
-				var animation = animations[i];
-				var componentType = animation.type;
-				var component = world[componentType][id];
-				var changedComponent = animation.apply(time, component);
-				animationRes[componentType] = animationRes[componentType] || {};
-				animationRes[componentType][id] = changedComponent;
+	function draw(state, context) {
+		Geom.draw(context, state.pos, state.geometry, state.color, state.highlighted,
+			state.halfConnector, state.connector, state.z);
+	};
+
+	function processWorldUpdates(world, updates) {
+		var updateComponents = updates.component ? Utils.mergeObjects(updates.component) : {};
+		var addEntities = updates.add || [];
+		var removeEntities = updates.remove || [];
+		var setProperties = updates.set ? Utils.mergeObjects(updates.set) : {};
+
+		var changes = Utils.mapObj(updateComponents, function(componentType, update) {
+			return Utils.mergeObjects(world[componentType], update);
+		});
+		changes = Utils.mergeObjects(changes, setProperties);
+
+		// TODO: remove entities
+
+		return Entity.add(Utils.mergeObjects(world, changes), addEntities);
+	}
+
+	function processComponentUpdates(state, updatesByType) {
+		var changes = Utils.mapObj(updatesByType, function(componentType, updates) {
+			return Utils.mergeObjects(state[componentType] || {}, Utils.mergeObjects(updates));
+		});
+		return Utils.mergeObjects(state, changes);
+	}
+
+	function processComponentRemoves(state, removesByType) {
+		var changes = Utils.mapObj(removesByType, function(componentType, removes) {
+			var idsToRemove = Utils.mergeObjects(removes);
+			return Utils.filterObj(state[componentType] || {}, function(id) {
+				return idsToRemove[id];
+			});
+		});
+		return Utils.mergeObjects(state, changes);		
+	}
+
+	function processQueries(state, queries) {
+		var events = [];
+		var sets = [];
+		var upserts = {};
+		var removes = {};
+		for (var i = 0; i < queries.length; i++) {
+			var query = queries[i];
+			if (query['$event']) {
+				events.push(query['$event']);
+			} else if (query['$set']) {
+				sets.push(query['$set']);
+			} else if (query['$upsertComponents']) {
+				var upsert = query['$upsertComponents'];
+				upserts[upsert.componentType] = upserts[upsert.componentType] || [];
+				upserts[upsert.componentType].push(upsert.values);
+			} else if (query['$removeComponents']) {
+				var remove = query['$removeComponents'];
+				removes[remove.componentType] = removes[remove.componentType] || [];
+				removes[remove.componentType].push(remove.ids);
 			}
-		});
+		}
+
+		state = Utils.mergeObjects(state, Utils.mergeObjects(sets));
+		state = processComponentUpdates(state, upserts);
+		state = processComponentRemoves(state, removes);
 
 		return {
-			component: [
-				{
-					pos: Movement.moveToTarget(deltaTime, world.target, world.pos)
-				},
-				animationRes
-			],
-			set: [],
-			add: [],
-			remove: []
+			state: state,
+			events: events
+		};
+	}
+
+	function processUpdates(systems, state, func, onEvent) {
+		var queries = systems.reduce(function(memo, system) {
+			var queries = func(system) || [];
+			if (!Array.isArray(queries)) {
+				queries = [queries];
+			}
+			return memo.concat(queries);
+		}, []);
+		var res = processQueries(state, queries);
+		var state = res.state;
+		var events = res.events;
+
+		var next = undefined;
+		if (res.events && onEvent) {
+			for (var i = 0; i < res.events.length; i++) {
+				var event = res.events[i];
+				var eventRes = onEvent(state, event);
+				if (eventRes.updates) {
+					state = processComponentUpdates(state, eventRes.updates);
+				}
+				if (eventRes.add) {
+					state = Entity.add(state, eventRes.add);
+				}
+				if (eventRes.remove) {
+					state = Entity.remove(state, eventRes.remove);
+				}
+				if (eventRes.set) {
+					state = Utils.mergeObjects(state, eventRes.set);
+				}
+				if (eventRes.next) {
+					next = eventRes.next;
+				}
+			}
+		}
+
+		return state;
+/*		var newScreen = Utils.setPropObj(screen, 'world', world);
+		return next ? next(newScreen) : newScreen; */
+	}
+
+	function makeUpdate(systems, onEvent) {
+		return function(state, deltaTime, time) {
+			return processUpdates(systems, state, function(system) {
+				return system.update ? system.update(state, deltaTime, time) : {};
+			}, onEvent);
+		};
+	}
+
+	function makeMouseDown(systems, onEvent) {
+		return function(state, mousePos) {
+			return processUpdates(systems, state, function(system) {
+				return system.onMouseDown ? system.onMouseDown(state, mousePos) : {};
+			}, onEvent);
+		};
+	}
+
+	function makeMouseMove(systems, onEvent) {
+		return function(state, mousePos) {
+			return processUpdates(systems, state, function(system) {
+				return system.onMouseMove ? system.onMouseMove(state, mousePos) : {};
+			}, onEvent);
+		};
+	}
+
+	function makeMouseUp(systems, onEvent) {
+		return function(state, mousePos) {
+			return processUpdates(systems, state, function(system) {
+				return system.onMouseUp ? system.onMouseUp(state, mousePos) : {};
+			}, onEvent);
+		};
+	}
+
+	exports.make = function(systems, params) {
+		return {
+			draw: params.draw || draw,
+			update: makeUpdate(systems, params.onEvent),
+			onMouseDown: makeMouseDown(systems, params.onEvent),
+			onMouseMove: makeMouseMove(systems, params.onEvent),
+			onMouseUp: makeMouseUp(systems, params.onEvent)
 		};
 	};
 
-	exports.draw = function(context, world) {
-		Geom.draw(context, world.pos, world.geometry, world.color, world.highlighted,
-			world.halfConnector, world.connector, world.z);
-	};
-
-	exports.onMouseDown = function(mousePos, world) {
-		var highlighteds = UIUtils.getMouseOffsets(mousePos, world.pos,
-			world.geometry, world.highlightable);
-		var pressedButtons = Button.getPressed(highlighteds, world.button);
-		return {
-			component: [{
-				button: pressedButtons,
-				color: Button.getColors(pressedButtons, highlighteds),
-			}],
-			set: [{
-				highlighted: highlighteds
-			}],
-			add: [],
-			remove: []
-		};
-	};
-
-	exports.onMouseUp = function(mousePos, world) {
-		var releasedButtons = Button.getReleased(world.button);
-		var reactingButtons = Utils.filterObj(releasedButtons, function(id, button) {
-			return world.highlighted[id] && button.onClick;
-		});
-
-		return {
-			component: [{
-				button: releasedButtons,
-				color: Button.getColors(releasedButtons, world.highlighted)
-			}],
-			events: Utils.values(Utils.mapObj(reactingButtons, function(id, button) {
-				return button.onClick();
-			})),
-			set: [],
-			add: [],
-			remove: []
-		};
-	};
-
-	exports.onMouseMove = function(mousePos, world) {
-		var highlighteds = UIUtils.getMouseOffsets(mousePos, world.pos,
-			world.geometry, world.highlightable);
-		return {
-			component: [{
-				color: Button.getColors(world.button, highlighteds),
-			}],
-			set: [{
-				highlighted: highlighteds
-			}],
-			add: [],
-			remove: []
-		};
-	};
+	exports.draw = draw;
 
 	return exports;
 })(DefaultScreen || {});

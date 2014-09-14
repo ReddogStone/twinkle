@@ -19,7 +19,7 @@
 <script src="text-helpers.js" type="text/javascript"></script>
 <script src="screen.js" type="text/javascript"></script>
 <script src="time.js" type="text/javascript"></script>
-<script src="component-system.js" type="text/javascript"></script>
+<script src="query.js" type="text/javascript"></script>
 
 <script src="animation-system.js" type="text/javascript"></script>
 <script src="highlight-system.js" type="text/javascript"></script>
@@ -29,6 +29,7 @@
 
 <script src="default-screen.js" type="text/javascript"></script>
 
+<script src="root-screen.js" type="text/javascript"></script>
 <script src="game-screen.js" type="text/javascript"></script>
 <script src="final-screen.js" type="text/javascript"></script>
 <script src="end-game-screen.js" type="text/javascript"></script>
@@ -99,17 +100,19 @@ function onload() {
 
 	Sound.play('background');
 
-//	var screen = GameScreen.init({ canvas: canvas, score: 0}, {starCount: 3, seed: 10});
-	var screen = MenuScreen.init(canvas);
+	var root = RootScreen.init(canvas);
+	var screen = root.screen;
+	var state = root.state;
+//	var screen = MenuScreen.init(canvas);
 
 	canvas.addEventListener('mousedown', function(event) {
-		screen = Screen.onMouseDown(screen, getMousePos(canvas, event));
+		state = screen.onMouseDown(state, getMousePos(canvas, event));
 	}, false);
 	document.addEventListener('mouseup', function(event) {
-		screen = Screen.onMouseUp(screen, getMousePos(canvas, event));
+		state = screen.onMouseUp(state, getMousePos(canvas, event));
 	}, false);
 	canvas.addEventListener('mousemove', function(event) {
-		screen = Screen.onMouseMove(screen, getMousePos(canvas, event));
+		state = screen.onMouseMove(state, getMousePos(canvas, event));
 	}, false);
 
 	var lastTime = Time.now();
@@ -118,6 +121,7 @@ function onload() {
 	gradient.addColorStop(0, Colors.BACKGROUND.primary);
 	gradient.addColorStop(1, Colors.BACKGROUND.secondary);
 
+	var frameTimes = [];
 	var animate = function() {
 		var time = Time.now();
 		var deltaTime = time - lastTime;
@@ -126,8 +130,37 @@ function onload() {
 		context.fillStyle = gradient;
 		context.fillRect(0, 0, canvas.width, canvas.height);
 
-		screen = Screen.update(screen, deltaTime * 0.001, time * 0.001);
-		Screen.draw(screen, context);
+		state = screen.update(state, deltaTime * 0.001, time * 0.001);
+		screen.draw(state, context);
+
+		// Frame time statistics
+		var BUFFER_SIZE = 100;
+		var frameDelta = Time.now() - time;
+		frameTimes.push(frameDelta);
+		if (frameTimes.length > BUFFER_SIZE) {
+			frameTimes = frameTimes.slice(frameTimes.length - BUFFER_SIZE);
+		}
+		var count = frameTimes.length;
+		var min = Number.MAX_VALUE;
+		var max = 0;
+		var sum = 0;
+		for (var i = 0; i < count; i++) {
+			var frameTime = frameTimes[i];
+			max = Math.max(frameTime, max);
+			min = Math.min(frameTime, min);
+			sum += frameTime;
+		}
+		var average = sum / count;
+
+		context.font = 'normal 1em Trebuchet';
+		context.fillStyle = 'burlywood';
+		context.fillRect(0, 0, 65, 75);
+		context.fillStyle = 'black';
+		context.textAlign = 'left';
+		context.textBaseline = 'top';
+		context.fillText(average.toFixed(2), 10, 10);
+		context.fillText(min.toFixed(2), 10, 30);
+		context.fillText(max.toFixed(2), 10, 50);
 
 		requestAnimFrame(animate);
 	};
