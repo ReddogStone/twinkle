@@ -1,4 +1,4 @@
-var MenuState = (function(exports) {
+var MenuScreen = (function(exports) {
 	var BUTTON_SIZE = Size.make(200, 140);
 
 	function oscillate(frequency, amplitude, setter) {
@@ -37,21 +37,35 @@ var MenuState = (function(exports) {
 		return res;
 	}
 
+	function onEvent(world, event) {
+		switch (event.type) {
+			case 'button_clicked':
+				return {
+					next: event.value
+				};
+		}
+
+		console.log('Unhandled event: ' + JSON.stringify(event));
+		return {};
+	}
+
 	exports.init = function(canvas) {
 		var startWithHelp = Button.make('StartWithHelp',
 			Point.make(400, 280),
 			BUTTON_SIZE,
 			'Start with help', 
 			function() {
-				return HelpState.init;
+				return function(screen) {
+					return HelpScreen.init(canvas);
+				};
 			});
 		var startWithoutHelp = Button.make('StartWithoutHelp',
 			Point.make(400, 510),
 			BUTTON_SIZE,
 			'Start without help',
 			function() {
-				return function(canvas, world) {
-					return GameState.firstLevel(canvas, world);
+				return function(screen) {
+					return GameScreen.firstLevel(canvas);
 				}
 			});
 
@@ -62,26 +76,18 @@ var MenuState = (function(exports) {
 		.apply(Entity.initSystem('pos', 'geometry', 'color', 'highlighted', 'highlightable',
 			'target', 'z', 'button', 'animation'));
 
-
 		return {
 			world: world,
-			onMouseDown: DefaultState.onMouseDown,
-			onMouseUp: function(mousePos, world) {
-				var res = DefaultState.onMouseUp(mousePos, world);
-				var answer = Utils.firstObj(res.buttonEvents, function() { return true; });
-				if (answer) {
-					Sound.play('select');
-					return {
-						next: answer
-					};
-				}
-				return res;
-			},
-			onMouseMove: DefaultState.onMouseMove,
-			update: DefaultState.update,
-			draw: DefaultState.draw
+			draw: DefaultScreen.draw,
+			onEvent: onEvent,
+			systems: [
+				AnimationSystem,
+				HighlightSystem,
+				ButtonSystem,
+				MovementSystem
+			]
 		};
 	};
 
 	return exports;
-})(MenuState || {});
+})(MenuScreen || {});

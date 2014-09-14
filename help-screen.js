@@ -1,5 +1,17 @@
-var HelpState = (function(exports) {
+var HelpScreen = (function(exports) {
 	var BUTTON_SIZE = Size.make(150, 100);
+
+	function onEvent(world, event) {
+		switch (event.type) {
+			case 'button_clicked':
+				return {
+					next: event.value
+				};
+		}
+
+		console.log('Unhandled event: ' + JSON.stringify(event));
+		return {};
+	}
 
 	exports.init = function(canvas) {
 		var world = Entity.accumulator()
@@ -15,8 +27,8 @@ var HelpState = (function(exports) {
 			'Triangles formed by intersecting lines are ok, though.'
 		]))
 		.add(Button.make('start', Point.make(400, 530), BUTTON_SIZE, 'OK, I got it', function() {
-			return function(canvas, world) {
-				return GameState.firstLevel(canvas, world);
+			return function(screen) {
+				return GameScreen.firstLevel(canvas);
 			}
 		}))
 		.apply(Entity.initSystem('pos', 'geometry', 'color', 'highlighted', 'highlightable',
@@ -24,23 +36,16 @@ var HelpState = (function(exports) {
 
 		return {
 			world: world,
-			onMouseDown: DefaultState.onMouseDown,
-			onMouseUp: function(mousePos, world) {
-				var res = DefaultState.onMouseUp(mousePos, world);
-				var answer = Utils.firstObj(res.buttonEvents, function() { return true; });
-				if (answer) {
-					Sound.play('select');
-					return {
-						next: answer
-					};
-				}
-				return res;
-			},
-			onMouseMove: DefaultState.onMouseMove,
-			update: DefaultState.update,
-			draw: DefaultState.draw
+			draw: DefaultScreen.draw,
+			onEvent: onEvent,
+			systems: [
+				AnimationSystem,
+				HighlightSystem,
+				ButtonSystem,
+				MovementSystem
+			]
 		};
 	};
 
 	return exports;
-})(HelpState || {});
+})(HelpScreen || {});

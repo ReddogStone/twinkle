@@ -27,14 +27,13 @@
 <script src="connector-system.js" type="text/javascript"></script>
 <script src="movement-system.js" type="text/javascript"></script>
 
-<script src="default-state.js" type="text/javascript"></script>
-<script src="menu-state.js" type="text/javascript"></script>
-<script src="help-state.js" type="text/javascript"></script>
-<script src="game-state.js" type="text/javascript"></script>
-<script src="end-game-state.js" type="text/javascript"></script>
-<script src="final-state.js" type="text/javascript"></script>
+<script src="default-screen.js" type="text/javascript"></script>
 
 <script src="game-screen.js" type="text/javascript"></script>
+<script src="final-screen.js" type="text/javascript"></script>
+<script src="end-game-screen.js" type="text/javascript"></script>
+<script src="menu-screen.js" type="text/javascript"></script>
+<script src="help-screen.js" type="text/javascript"></script>
 
 <script src="seedrandom-master/seedrandom.min.js" type="text/javascript"></script>
 
@@ -100,7 +99,8 @@ function onload() {
 
 	Sound.play('background');
 
-	var screen = GameScreen.init(canvas, {score: 0}, {starCount: 3, seed: 10});
+//	var screen = GameScreen.init({ canvas: canvas, score: 0}, {starCount: 3, seed: 10});
+	var screen = MenuScreen.init(canvas);
 
 	canvas.addEventListener('mousedown', function(event) {
 		screen = Screen.onMouseDown(screen, getMousePos(canvas, event));

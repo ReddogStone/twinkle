@@ -1,4 +1,4 @@
-var DefaultState = (function(exports) {
+var DefaultScreen = (function(exports) {
 	exports.update = function(world, deltaTime, time) {
 		var animationRes = {};
 		Utils.forEachObj(world.animation, function(id, animations) {
@@ -83,4 +83,4 @@ var DefaultState = (function(exports) {
 	};
 
 	return exports;
-})(DefaultState || {});
+})(DefaultScreen || {});

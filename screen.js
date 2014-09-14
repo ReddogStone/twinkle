@@ -17,7 +17,7 @@ var Screen = (function(exports) {
 
 	function processComponentUpdates(world, updates) {
 		var changes = Utils.mapObj(updates, function(componentType, update) {
-			return Utils.mergeObjects(world[componentType], update);
+			return Utils.mergeObjects(world[componentType] || {}, update);
 		});
 		return Utils.mergeObjects(world, changes);
 	}
@@ -29,13 +29,14 @@ var Screen = (function(exports) {
 				throw new Error('No update result');
 			}
 			return {
-				updates: Utils.mergeObjects(memo.updates, res.updates || {}),
+				updates: processComponentUpdates(memo.updates, res.updates || {}),
 				events: memo.events.concat(res.events || [])
 			};
 		}, { updates: {}, events: [] });
 		var world = processComponentUpdates(screen.world, res.updates);
 
-		if (res.events) {
+		var next = undefined;
+		if (res.events && screen.onEvent) {
 			for (var i = 0; i < res.events.length; i++) {
 				var event = res.events[i];
 				var eventRes = screen.onEvent(world, event);
@@ -52,12 +53,13 @@ var Screen = (function(exports) {
 					world = Utils.mergeObjects(world, eventRes.set);
 				}
 				if (eventRes.next) {
-					return eventRes.next(world);
+					next = eventRes.next;
 				}
 			}
 		}
 
-		return Utils.setPropObj(screen, 'world', world);
+		var newScreen = Utils.setPropObj(screen, 'world', world);
+		return next ? next(newScreen) : newScreen;
 	}
 
 	exports.update = function(screen, deltaTime, time) {

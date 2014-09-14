@@ -9,7 +9,7 @@ var STAR_RADIUS = 15;
 		STARS: 1,
 		TEXT: 20
 	};
-	var MAX_LEVEL = 20;
+	var MAX_LEVEL = 10;
 	var DECORATION_COUNT = 50;
 
 	var END_GAME_TOP = 200;
@@ -223,7 +223,7 @@ var STAR_RADIUS = 15;
 	}
 
 	function draw(context, world) {
-		DefaultState.draw(context, world);
+		DefaultScreen.draw(context, world);
 		var currentScore = Object.keys(world.connector).length;
 		Geom.drawText(context, 'Level Score: ' + currentScore,
 			Point.make(670, 510), 1.3, 'center', 0, Colors.Button.TEXT.primary);
@@ -262,9 +262,9 @@ var STAR_RADIUS = 15;
 					Sound.play('lose');
 					res.updates.highlighted = getHighlightedTriangle(common, event.begin, event.end);
 					res.add = getLoseText().concat([res.add]);
-/*					res.next = function(world) {
-						return exports.init(world.canvas, world, world.level)
-					}; */
+					res.next = function(screen) {
+						return EndGameScreen.init(screen, screen.world.score, screen.world.level)
+					};
 				}
 
 				var maxConnectionCount = calculateMaxConnectionCount(world.level.starCount);
@@ -272,11 +272,18 @@ var STAR_RADIUS = 15;
 				if (currentScore === maxConnectionCount) {
 					Sound.play('win');
 					res.add = getWinText().concat([res.add]);
-/*					res.next = function(canvas, world) {
-						return EndGameState.init(canvas, world, starCount + 1,
-							world.score + currentScore)
-					}; */
-				}				
+					res.next = function(screen) {
+						var nextLevel = undefined;
+						var currentLevel = screen.world.level;
+						if (currentLevel.starCount < MAX_LEVEL) {
+							nextLevel = {
+								starCount: currentLevel.starCount + 1,
+								seed: currentLevel.seed + 1
+							};
+						}
+						return EndGameScreen.init(screen, screen.world.score + currentScore, nextLevel);
+					};
+				}
 
 				return res;
 		}
@@ -285,22 +292,29 @@ var STAR_RADIUS = 15;
 		return {};
 	}
 
-	exports.init = function(canvas, world, level) {
-		var newWorld = Entity.accumulator()
+	exports.firstLevel = function(canvas) {
+		return exports.init({canvas: canvas, score: 0}, { starCount: 3, seed: 10 });
+	};
+
+	exports.init = function(world, level) {
+		var canvas = world.canvas;
+
+		var myWorld = Entity.accumulator()
 		.add(createStars(canvas.width, canvas.height, level.starCount, level.seed))
 		.add(createDecorations(world, canvas.width, canvas.height, level.seed))
 		.add(Button.make('Restart', Point.make(120, 550), Size.make(120, 90), 'Restart Level', function() {
-			return function(world) {
-				return exports.init(canvas, world, level);
+			return function(screen) {
+				return exports.init(screen.world, level);
 			};
 		}, level.seed + 1))
 		.add(Button.make('NextLevel', Point.make(385, 550), Size.make(120, 90), 'Next Level', function() {
-			return function(world) {
+			return function(screen) {
+				var world = screen.world;
 				var score = world.score + Object.keys(world.connector).length;
 				if (level.starCount === MAX_LEVEL) {
-					return FinalState.init(world, score);
+					return FinalScreen.init(world.canvas, score);
 				} else {
-					return exports.init(canvas, world, Utils.mergeObjects(level, {
+					return exports.init(Utils.setPropObj(world, 'score', score), Utils.mergeObjects(level, {
 						starCount: level.starCount + 1,
 						seed: level.seed + 1
 					}));
@@ -313,15 +327,15 @@ var STAR_RADIUS = 15;
 			'connector', 'halfConnector', 'starSet', 'neighbor', 'z', 'button', 'animation',
 			'star'));
 
-		newWorld.canvas = canvas;
-		newWorld.score = world.score;
-		newWorld.global = world.global;
-		newWorld.level = level;
-		newWorld.possibleScore = calculateMaxConnectionCount(level.starCount);
+		myWorld.canvas = canvas;
+		myWorld.score = world.score;
+		myWorld.global = world.global;
+		myWorld.level = level;
+		myWorld.possibleScore = calculateMaxConnectionCount(level.starCount);
 
 		return {
 			draw: draw,
-			world: newWorld,
+			world: myWorld,
 			onEvent: onEvent,
 			systems: [
 				AnimationSystem,
