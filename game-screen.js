@@ -116,7 +116,7 @@ var STAR_RADIUS = 15;
 		}];
 	}
 
-	function createDecorations(initWorld, width, height, seed) {
+	function createDecorations(width, height, seed) {
 		var prng = new Math.seedrandom(seed);
 
 		var res = [];
@@ -296,10 +296,10 @@ var STAR_RADIUS = 15;
 		return exports.init(canvas, {score: 0}, { starCount: 3, seed: 10 });
 	};
 
-	exports.init = function(canvas, world, level) {
+	exports.init = function(canvas, prevScreen, prevState, level) {
 		var myWorld = Entity.accumulator()
 		.add(createStars(canvas.width, canvas.height, level.starCount, level.seed))
-		.add(createDecorations(world, canvas.width, canvas.height, level.seed))
+		.add(createDecorations(canvas.width, canvas.height, level.seed))
 		.add(Button.make('Restart', Point.make(120, 550), Size.make(120, 90), 'Restart Level', function() {
 			return function(screen) {
 				return exports.init(screen.world, level);
@@ -325,7 +325,7 @@ var STAR_RADIUS = 15;
 			'connector', 'halfConnector', 'starSet', 'neighbor', 'z', 'button', 'animation',
 			'star'));
 
-		myWorld.score = world.score;
+		myWorld.score = prevState.score;
 		myWorld.level = level;
 		myWorld.possibleScore = calculateMaxConnectionCount(level.starCount);
 

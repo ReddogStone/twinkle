@@ -1,30 +1,18 @@
 var EndGameScreen = (function(exports) {
 
-	exports.init = function(screen, score, level) {
-		var clickToContinue = Object.create(ComponentSystem);
-		clickToContinue.onMouseDown = function() {
-			return { events: [{ type: 'continue' }] };
-		};
-
+	exports.init = function(canvas, prevScreen, prevState, level) {
 		return {
-			draw: screen.draw,
-			world: screen.world,
-			onEvent: function(world, event) {
-				if (event.type === 'continue') {
-					return {
-						set: { score: score },
-						next: function(screen) {
-							if (level) {
-								return GameScreen.init(screen.world, level)
-							} else {
-								return FinalScreen.init(screen.world.canvas, score);
-							}
-						}
-					};
-				}
+			screen: {
+				draw: prevScreen.draw,
+				update: prevScreen.update,
+				onMouseDown: function(state, mousePos) {
+					return Query.event({ '$term': level });
+				},
+				onMouseMove: function() {},
+				onMouseUp: function() {}
 			},
-			systems: [clickToContinue, MovementSystem, AnimationSystem]
-		};
+			state: prevState
+		};		
 	}
 
 	return exports;

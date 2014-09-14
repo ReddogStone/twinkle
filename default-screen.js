@@ -4,22 +4,6 @@ var DefaultScreen = (function(exports) {
 			state.halfConnector, state.connector, state.z);
 	};
 
-	function processWorldUpdates(world, updates) {
-		var updateComponents = updates.component ? Utils.mergeObjects(updates.component) : {};
-		var addEntities = updates.add || [];
-		var removeEntities = updates.remove || [];
-		var setProperties = updates.set ? Utils.mergeObjects(updates.set) : {};
-
-		var changes = Utils.mapObj(updateComponents, function(componentType, update) {
-			return Utils.mergeObjects(world[componentType], update);
-		});
-		changes = Utils.mergeObjects(changes, setProperties);
-
-		// TODO: remove entities
-
-		return Entity.add(Utils.mergeObjects(world, changes), addEntities);
-	}
-
 	function processComponentUpdates(state, updatesByType) {
 		var changes = Utils.mapObj(updatesByType, function(componentType, updates) {
 			return Utils.mergeObjects(state[componentType] || {}, Utils.mergeObjects(updates));
@@ -82,8 +66,13 @@ var DefaultScreen = (function(exports) {
 		var events = res.events;
 
 		var next = undefined;
-		if (res.events && onEvent) {
+		if (onEvent) {
 			for (var i = 0; i < res.events.length; i++) {
+				return {
+					state: state,
+					term: { starCount: 10, seed: 1337 }
+				};
+
 				var event = res.events[i];
 				var eventRes = onEvent(state, event);
 				if (eventRes.updates) {
@@ -104,9 +93,9 @@ var DefaultScreen = (function(exports) {
 			}
 		}
 
-		return state;
-/*		var newScreen = Utils.setPropObj(screen, 'world', world);
-		return next ? next(newScreen) : newScreen; */
+		return {
+			state: state
+		};
 	}
 
 	function makeUpdate(systems, onEvent) {

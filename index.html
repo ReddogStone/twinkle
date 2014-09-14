@@ -29,6 +29,8 @@
 
 <script src="default-screen.js" type="text/javascript"></script>
 
+<script src="sequence-screen.js" type="text/javascript"></script>
+
 <script src="root-screen.js" type="text/javascript"></script>
 <script src="game-screen.js" type="text/javascript"></script>
 <script src="final-screen.js" type="text/javascript"></script>
@@ -106,13 +108,13 @@ function onload() {
 //	var screen = MenuScreen.init(canvas);
 
 	canvas.addEventListener('mousedown', function(event) {
-		state = screen.onMouseDown(state, getMousePos(canvas, event));
+		state = screen.onMouseDown(state, getMousePos(canvas, event)).state;
 	}, false);
 	document.addEventListener('mouseup', function(event) {
-		state = screen.onMouseUp(state, getMousePos(canvas, event));
+		state = screen.onMouseUp(state, getMousePos(canvas, event)).state;
 	}, false);
 	canvas.addEventListener('mousemove', function(event) {
-		state = screen.onMouseMove(state, getMousePos(canvas, event));
+		state = screen.onMouseMove(state, getMousePos(canvas, event)).state;
 	}, false);
 
 	var lastTime = Time.now();
@@ -130,7 +132,7 @@ function onload() {
 		context.fillStyle = gradient;
 		context.fillRect(0, 0, canvas.width, canvas.height);
 
-		state = screen.update(state, deltaTime * 0.001, time * 0.001);
+		state = screen.update(state, deltaTime * 0.001, time * 0.001).state;
 		screen.draw(state, context);
 
 		// Frame time statistics
