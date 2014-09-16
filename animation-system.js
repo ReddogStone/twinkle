@@ -1,5 +1,9 @@
 var AnimationSystem = (function(exports) {
 	exports.update = function(world, deltaTime, time) {
+		if (!world) {
+			throw new Error('No world!');
+		}
+
 		var animationRes = {};
 		var queries = [];
 		Utils.forEachObj(world.animation, function(id, animations) {

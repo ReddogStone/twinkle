@@ -1,12 +1,10 @@
 var Query = (function(exports) {
 	exports.addEntity = function(entity) {
-		var res = {};
-		var insert = {};
-		insert[id] = value;
-		res[componentType] = {
-			'$add': insert
-		};
-		return res;
+		return { '$addEntity': entity };
+	};
+
+	exports.removeEntity = function(id) {
+		return { '$removeEntity': id };
 	};
 
 	exports.upsertComponent = function(componentType, id, value) {

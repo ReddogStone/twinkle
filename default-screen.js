@@ -12,10 +12,9 @@ var DefaultScreen = (function(exports) {
 	}
 
 	function processComponentRemoves(state, removesByType) {
-		var changes = Utils.mapObj(removesByType, function(componentType, removes) {
-			var idsToRemove = Utils.mergeObjects(removes);
+		var changes = Utils.mapObj(removesByType, function(componentType, idsToRemove) {
 			return Utils.filterObj(state[componentType] || {}, function(id) {
-				return idsToRemove[id];
+				return !idsToRemove[id];
 			});
 		});
 		return Utils.mergeObjects(state, changes);		
@@ -38,8 +37,29 @@ var DefaultScreen = (function(exports) {
 				upserts[upsert.componentType].push(upsert.values);
 			} else if (query['$removeComponents']) {
 				var remove = query['$removeComponents'];
-				removes[remove.componentType] = removes[remove.componentType] || [];
-				removes[remove.componentType].push(remove.ids);
+				removes[remove.componentType] = removes[remove.componentType] || {};
+				for (var j = 0; j < remove.ids.length; j++) {
+					removes[remove.componentType][remove.ids[j]] = true;
+				}
+			} else if (query['$addEntity']) {
+				var entity = query['$addEntity'];
+				Utils.forEachObj(entity, function(componentType, component) {
+					if (componentType !== 'id') {
+						var addComponent = {};
+						addComponent[entity.id] = component;
+						upserts[componentType] = upserts[componentType] || [];
+						upserts[componentType].push(addComponent);
+					}
+				});
+			} else if (query['$removeEntity']) {
+				var idToRemove = query['$removeEntity'];
+				var containingSystems = Utils.filterObj(state, function(componentType, system) {
+					return (typeof system === 'object') && (idToRemove in system);
+				});
+				Utils.forEachObj(containingSystems, function(componentType) {
+					removes[componentType] = removes[componentType] || {};
+					removes[componentType][idToRemove] = true;
+				});
 			}
 		}
 
@@ -68,28 +88,21 @@ var DefaultScreen = (function(exports) {
 		var next = undefined;
 		if (onEvent) {
 			for (var i = 0; i < res.events.length; i++) {
-				return {
-					state: state,
-					term: { starCount: 10, seed: 1337 }
-				};
-
 				var event = res.events[i];
-				var eventRes = onEvent(state, event);
-				if (eventRes.updates) {
-					state = processComponentUpdates(state, eventRes.updates);
+
+				if (event.type === 'term') {
+					return {
+						state: state,
+						term: event.value
+					};
 				}
-				if (eventRes.add) {
-					state = Entity.add(state, eventRes.add);
+
+				var eventQueries = onEvent(state, event) || [];
+				if (!Array.isArray(eventQueries)) {
+					eventQueries = [eventQueries];
 				}
-				if (eventRes.remove) {
-					state = Entity.remove(state, eventRes.remove);
-				}
-				if (eventRes.set) {
-					state = Utils.mergeObjects(state, eventRes.set);
-				}
-				if (eventRes.next) {
-					next = eventRes.next;
-				}
+				res = processQueries(state, eventQueries);
+				state = res.state;
 			}
 		}
 

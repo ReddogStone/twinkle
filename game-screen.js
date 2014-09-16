@@ -235,54 +235,54 @@ var STAR_RADIUS = 15;
 
 	function onEvent(world, event) {
 		switch (event.type) {
-			case 'button_clicked':
-				return {
-					next: event.value
-				};
 			case 'connection_started':
-				return {
-					add: beginConnection(event.mousePos, event.startId)
-				}
+				return Query.addEntity(beginConnection(event.mousePos, event.startId));
 			case 'connection_aborted':
-				return {
-					remove: ['curConnector']
-				}
+				return Query.removeEntity('curConnector');
 			case 'connection_closed':
 				Sound.play('connect');
-				var res = {
-					updates: {
-						neighbor: newNeighbors(event, world.neighbor)
-					},
-					add: createConnector(event),
-					remove: ['curConnector']
-				};
+				var res = [
+					Query.upsertComponents('neighbor', newNeighbors(event, world.neighbor)),
+					Query.addEntity(createConnector(event)),
+					Query.removeEntity('curConnector')
+				];
 
 				var common = commonNeighbor(world.neighbor[event.begin], world.neighbor[event.end]);
 				if (common) {
 					Sound.play('lose');
-					res.updates.highlighted = getHighlightedTriangle(common, event.begin, event.end);
-					res.add = getLoseText().concat([res.add]);
-					res.next = function(screen) {
-						return EndGameScreen.init(screen, screen.world.score, screen.world.level)
-					};
+					res.push(Query.upsertComponents('highlighted', 
+						getHighlightedTriangle(common, event.begin, event.end)));
+					res.push(Query.add(getLoseText().concat([res.add])));
+					res.push(Query.event({
+						type: 'term',
+						value: {
+							score: world.score,
+							level: world.level
+						}
+					}));
 				}
 
 				var maxConnectionCount = calculateMaxConnectionCount(world.level.starCount);
 				var currentScore = Object.keys(world.connector).length + 1;
 				if (currentScore === maxConnectionCount) {
 					Sound.play('win');
-					res.add = getWinText().concat([res.add]);
-					res.next = function(screen) {
-						var nextLevel = undefined;
-						var currentLevel = screen.world.level;
-						if (currentLevel.starCount < MAX_LEVEL) {
-							nextLevel = {
-								starCount: currentLevel.starCount + 1,
-								seed: currentLevel.seed + 1
-							};
+					res = res.concat(getWinText().map(function(entity) { return Query.addEntity(entity); }));
+
+					var nextLevel = undefined;
+					var currentLevel = world.level;
+					if (currentLevel.starCount < MAX_LEVEL) {
+						nextLevel = {
+							starCount: currentLevel.starCount + 1,
+							seed: currentLevel.seed + 1
+						};
+					}
+					res.push(Query.event({
+						type: 'term',
+						value: {
+							score: world.score + currentScore,
+							level: nextLevel
 						}
-						return EndGameScreen.init(screen, screen.world.score + currentScore, nextLevel);
-					};
+					}));
 				}
 
 				return res;
