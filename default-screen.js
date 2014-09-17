@@ -95,9 +95,10 @@ var DefaultScreen = (function(exports) {
 					case 'term':
 						term = event.value;
 						break;
-					case 'button_click':
-						if (event.value['$term']) {
-							term = event.value['$term'];
+					case 'button_clicked':
+						var reaction = event.value.reaction;
+						if (reaction['$term']) {
+							term = reaction['$term'];
 						}
 						break;
 					default:
@@ -113,6 +114,15 @@ var DefaultScreen = (function(exports) {
 
 		res = processQueries(state, eventQueries);
 		state = res.state;
+
+		for (var i = 0; i < res.events.length; i++) {
+			var event = res.events[i];
+			if (event.type === 'term') {
+				term = event.value;
+			} else {
+				throw new Error('Unexpected event: ' + JSON.stringify(event));
+			}
+		}
 
 		return {
 			state: state,

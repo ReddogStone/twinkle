@@ -35,7 +35,7 @@ var ButtonSystem = (function(exports) {
 		});
 
 		var events = Object.keys(reactingButtons).map(function(id) {
-			return Query.event('button_clicked', { id: id, reaction: reactingButtons[id].onClick()});
+			return Query.event('button_clicked', { id: id, reaction: reactingButtons[id].onClick(world)});
 		});
 
 		return [

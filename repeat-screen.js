@@ -1,33 +1,25 @@
-var SequenceScreen = (function(exports) {
+var RepeatScreen = (function(exports) {
 	function draw(state, context) {
-		state.currentScreen.draw(state.currentState, context);
+		state.screen.draw(state.state, context);
 	}
 
 	function react(canvas, state, func) {
-		var currentScreen = state.currentScreen;
-		var res = func(currentScreen, state.currentState);
+		var screen = state.screen;
+		var res = func(screen, state.state);
 
 		if (res) {
 			if (res.term) {
-				var nextScreens = state.nextScreens;
-				if (nextScreens.length > 0) {
-					var next = nextScreens[0].init(canvas, currentScreen, res.state, res.term)
-					return {
-						state: {
-							currentScreen: next.screen,
-							currentState: next.state,
-							nextScreens: nextScreens.slice(1)
-						}
-					};
-				}
-
+				var next = state.screenTemplate.init(canvas, screen, res.state, res.term)
 				return {
-					state: res.state,
-					term: res.term
+					state: {
+						screen: next.screen,
+						state: next.state,
+						screenTemplate: state.screenTemplate
+					}
 				};
 			}
 			return {
-				state: Utils.setPropObj(state, 'currentState', res.state)
+				state: Utils.setPropObj(state, 'state', res.state)
 			};
 		}
 
@@ -66,13 +58,10 @@ var SequenceScreen = (function(exports) {
 		};
 	}
 
-	exports.make = function(screens) {
-		if (!Array.isArray(screens)) {
-			screens = Array.prototype.slice.call(arguments);
-		}
+	exports.make = function(screen) {
 		return {
 			init: function(canvas, prevScreen, prevState, prevTermSignal) {
-				var current = screens[0].init.apply(screens[0], arguments);
+				var current = screen.init.apply(screen, arguments);
 				return {
 					screen: {
 						draw: draw,
@@ -82,9 +71,9 @@ var SequenceScreen = (function(exports) {
 						onMouseUp: makeMouseUp(canvas)
 					},
 					state: {
-						currentScreen: current.screen,
-						currentState: current.state,
-						nextScreens: screens.slice(1)
+						screen: current.screen,
+						state: current.state,
+						screenTemplate: screen
 					}
 				};
 			}
@@ -92,4 +81,4 @@ var SequenceScreen = (function(exports) {
 	};
 
 	return exports;
-})(SequenceScreen || {});
+})(RepeatScreen || {});

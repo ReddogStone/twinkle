@@ -251,9 +251,11 @@ var STAR_RADIUS = 15;
 				var common = commonNeighbor(world.neighbor[value.begin], world.neighbor[value.end]);
 				if (common) {
 					Sound.play('lose');
+					res = res.concat(getLoseText().map(function(entity) { 
+						return Query.addEntity(entity);
+					}));
 					res.push(Query.upsertComponents('highlighted', 
 						getHighlightedTriangle(common, value.begin, value.end)));
-					res.push(Query.add(getLoseText().concat([res.add])));
 					res.push(Query.event('term', { score: world.score, level: world.level }));
 				}
 
@@ -285,36 +287,43 @@ var STAR_RADIUS = 15;
 		return exports.init(canvas, {score: 0}, { starCount: 3, seed: 10 });
 	};
 
-	exports.init = function(canvas, prevScreen, prevState, level) {
+	exports.init = function(canvas, prevScreen, prevState, scoreAndLevel) {
+		var score = scoreAndLevel.score;
+		var level = scoreAndLevel.level;
+
 		var myWorld = Entity.accumulator()
 		.add(createStars(canvas.width, canvas.height, level.starCount, level.seed))
 		.add(createDecorations(canvas.width, canvas.height, level.seed))
-		.add(Button.make('Restart', Point.make(120, 550), Size.make(120, 90), 'Restart Level', function() {
-			return function(screen) {
-				return exports.init(screen.world, level);
-			};
-		}, level.seed + 1))
-		.add(Button.make('NextLevel', Point.make(385, 550), Size.make(120, 90), 'Next Level', function() {
-			return function(screen) {
-				var world = screen.world;
-				var score = world.score + Object.keys(world.connector).length;
-				if (level.starCount === MAX_LEVEL) {
-					return FinalScreen.init(world.canvas, score);
-				} else {
-					return exports.init(Utils.setPropObj(world, 'score', score), Utils.mergeObjects(level, {
-						starCount: level.starCount + 1,
-						seed: level.seed + 1
-					}));
+		.add(Button.make('Restart', Point.make(120, 550), Size.make(120, 90), 'Restart Level', 
+			function(state) {
+				return {
+					'$term': { score: score, level: level, instant: true }
+				};
+			}, level.seed + 1))
+		.add(Button.make('NextLevel', Point.make(385, 550), Size.make(120, 90), 'Next Level', 
+			function(state) {
+				var nextLevel = {
+					starCount: level.starCount + 1,
+					seed: level.seed + 1
+				};
+				if (nextLevel.starCount > MAX_LEVEL) {
+					nextLevel = undefined;
 				}
-			};
-		}, level.seed + 2))
+				return {
+					'$term': { 
+						score: score + Object.keys(state.connector).length,
+						level: nextLevel,
+						instant: true
+					}
+				};
+			}, level.seed + 2))
 		.add(UIUtils.animatedCloud('Score', Point.make(670, 550), Size.make(140, 100), 0, level.seed))
 		.apply(Entity.initSystem('pos', 'geometry', 'color', 'velocity', 
 			'draggable', 'dragOffset', 'target', 'targetRadius', 'highlighted', 'highlightable',
 			'connector', 'halfConnector', 'starSet', 'neighbor', 'z', 'button', 'animation',
 			'star'));
 
-		myWorld.score = prevState.score;
+		myWorld.score = score;
 		myWorld.level = level;
 		myWorld.possibleScore = calculateMaxConnectionCount(level.starCount);
 
