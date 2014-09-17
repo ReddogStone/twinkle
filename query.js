@@ -43,9 +43,12 @@ var Query = (function(exports) {
 		};
 	};
 
-	exports.event = function(event) {
+	exports.event = function(type, value) {
 		return {
-			'$event': event
+			'$event': {
+				type: type,
+				value: value
+			}
 		};
 	};
 

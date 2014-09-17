@@ -234,32 +234,27 @@ var STAR_RADIUS = 15;
 	}
 
 	function onEvent(world, event) {
+		var value = event.value;
 		switch (event.type) {
 			case 'connection_started':
-				return Query.addEntity(beginConnection(event.mousePos, event.startId));
+				return Query.addEntity(beginConnection(value.mousePos, value.startId));
 			case 'connection_aborted':
 				return Query.removeEntity('curConnector');
 			case 'connection_closed':
 				Sound.play('connect');
 				var res = [
-					Query.upsertComponents('neighbor', newNeighbors(event, world.neighbor)),
-					Query.addEntity(createConnector(event)),
+					Query.upsertComponents('neighbor', newNeighbors(value, world.neighbor)),
+					Query.addEntity(createConnector(value)),
 					Query.removeEntity('curConnector')
 				];
 
-				var common = commonNeighbor(world.neighbor[event.begin], world.neighbor[event.end]);
+				var common = commonNeighbor(world.neighbor[value.begin], world.neighbor[value.end]);
 				if (common) {
 					Sound.play('lose');
 					res.push(Query.upsertComponents('highlighted', 
-						getHighlightedTriangle(common, event.begin, event.end)));
+						getHighlightedTriangle(common, value.begin, value.end)));
 					res.push(Query.add(getLoseText().concat([res.add])));
-					res.push(Query.event({
-						type: 'term',
-						value: {
-							score: world.score,
-							level: world.level
-						}
-					}));
+					res.push(Query.event('term', { score: world.score, level: world.level }));
 				}
 
 				var maxConnectionCount = calculateMaxConnectionCount(world.level.starCount);
@@ -276,13 +271,7 @@ var STAR_RADIUS = 15;
 							seed: currentLevel.seed + 1
 						};
 					}
-					res.push(Query.event({
-						type: 'term',
-						value: {
-							score: world.score + currentScore,
-							level: nextLevel
-						}
-					}));
+					res.push(Query.event('term', { score: world.score + currentScore, level: nextLevel }));
 				}
 
 				return res;

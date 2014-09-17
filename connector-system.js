@@ -3,8 +3,7 @@ var ConnectorSystem = (function(exports) {
 		var hovered = UIUtils.getMouseOffsets(mousePos, state.pos, state.geometry, state.star);
 		var hoveredId = Object.keys(hovered)[0];
 		if (hoveredId) {
-			return Query.event({
-				type: 'connection_started',
+			return Query.event('connection_started', {
 				startId: hoveredId,
 				mousePos: Point.clone(mousePos)
 			});
@@ -22,17 +21,14 @@ var ConnectorSystem = (function(exports) {
 				var begin = halfConnector.begin;
 				var end = hoveredId;
 				if ((begin !== end) && !(state.neighbor[begin] && state.neighbor[begin][end]) ) {
-					return Query.event({
-						type: 'connection_closed',
+					return Query.event('connection_closed', {
 						begin: begin,
 						end: end
 					});
 				}
 			}
 
-			return Query.event({
-				type: 'connection_aborted'
-			});
+			return Query.event('connection_aborted');
 		}
 	};
 

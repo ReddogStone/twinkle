@@ -85,29 +85,38 @@ var DefaultScreen = (function(exports) {
 		var state = res.state;
 		var events = res.events;
 
-		var next = undefined;
+		var term = undefined;
+		var eventQueries = [];
 		if (onEvent) {
 			for (var i = 0; i < res.events.length; i++) {
 				var event = res.events[i];
 
-				if (event.type === 'term') {
-					return {
-						state: state,
-						term: event.value
-					};
+				switch (event.type) {
+					case 'term':
+						term = event.value;
+						break;
+					case 'button_click':
+						if (event.value['$term']) {
+							term = event.value['$term'];
+						}
+						break;
+					default:
+						var newQueries = onEvent(state, event) || [];
+						if (!Array.isArray(newQueries)) {
+							newQueries = [newQueries];
+						}
+						eventQueries = eventQueries.concat(newQueries);
+						break;
 				}
-
-				var eventQueries = onEvent(state, event) || [];
-				if (!Array.isArray(eventQueries)) {
-					eventQueries = [eventQueries];
-				}
-				res = processQueries(state, eventQueries);
-				state = res.state;
 			}
 		}
 
+		res = processQueries(state, eventQueries);
+		state = res.state;
+
 		return {
-			state: state
+			state: state,
+			term: term
 		};
 	}
 
