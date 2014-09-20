@@ -1,23 +1,25 @@
 var RootScreen = (function(exports) {
-	exports.init = function(canvas) {
-		var inLevel = IfScreen.make(GameScreen, EndGameScreen, function(termSignal) {
-			if (!termSignal.instant) {
-				return termSignal;
-			}
-		});
-		var menu = IfScreen.make(MenuScreen, HelpScreen, function(termSignal) {
-			if (termSignal.help) {
-				return termSignal;
-			}
-		});
+	function makeScreen(template) {
+		if (Array.isArray(template)) {
+			return SequenceScreen.make(template.map(function(seqScreenTemplate) {
+				return makeScreen(seqScreenTemplate);
+			}));
+		} else if (template.repeat) {
+			return RepeatScreen.make(makeScreen(template.repeat));
+		} else if (template.repeatUntil) {
+			var screen = template.repeatUntil.screen;
+			return RepeatScreen.make(makeScreen(screen), template.repeatUntil.termCondition);
+		} else if (template.if) {
+			var first = makeScreen(template.if.first);
+			var second = makeScreen(template.if.second);
+			return IfScreen.make(first, second, template.if.condition);
+		} else {
+			return template;
+		}
+	}
 
-		return RepeatScreen.make(
-			SequenceScreen.make(
-				menu,
-				RepeatScreen.make(inLevel, function(termSignal) { return !termSignal.level; }),
-				FinalScreen
-			)
-		).init(canvas);
+	exports.make = function(template) {
+		return makeScreen(template);
 	};
 
 	return exports;
