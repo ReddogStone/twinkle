@@ -44,18 +44,14 @@ var MenuScreen = (function(exports) {
 			BUTTON_SIZE,
 			'Start with help', 
 			function() {
-				return {
-					'$term': Utils.setPropObj(scoreAndLevel, 'help', true)
-				};
+				return Query.event('term', Utils.setPropObj(scoreAndLevel, 'help', true));
 			});
 		var startWithoutHelp = Button.make('StartWithoutHelp',
 			Point.make(400, 510),
 			BUTTON_SIZE,
 			'Start without help',
 			function() {
-				return {
-					'$term': scoreAndLevel
-				};
+				return Query.event('term', scoreAndLevel);
 			});
 
 		var world = Entity.accumulator()

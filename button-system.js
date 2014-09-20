@@ -34,14 +34,18 @@ var ButtonSystem = (function(exports) {
 			return hovered[id] ? Colors.Button.HOVERED : Colors.Button.NORMAL;
 		});
 
-		var events = Object.keys(reactingButtons).map(function(id) {
-			return Query.event('button_clicked', { id: id, reaction: reactingButtons[id].onClick(world)});
-		});
+		var buttonQueries = Object.keys(reactingButtons).reduce(function(memo, id) {
+			var queries = reactingButtons[id].onClick(world);
+			if (!Array.isArray(queries)) {
+				queries = [queries];
+			}
+			return memo.concat(queries);
+		}, []);
 
 		return [
 			Query.upsertComponents('button', releasedButtons),
 			Query.upsertComponents('color', colors),
-		].concat(events);
+		].concat(buttonQueries);
 	};
 
 	exports.onMouseMove = function(world, mousePos) {

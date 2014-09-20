@@ -301,9 +301,7 @@ var STAR_RADIUS = 15;
 		.add(createDecorations(canvas.width, canvas.height, level.seed))
 		.add(Button.make('Restart', Point.make(120, 550), Size.make(120, 90), 'Restart Level', 
 			function(state) {
-				return {
-					'$term': { score: score, level: level, instant: true }
-				};
+				return Query.event('term', { score: score, level: level, instant: true });
 			}, level.seed + 1))
 		.add(Button.make('NextLevel', Point.make(385, 550), Size.make(120, 90), 'Next Level', 
 			function(state) {
@@ -314,13 +312,11 @@ var STAR_RADIUS = 15;
 				if (nextLevel.starCount > MAX_LEVEL) {
 					nextLevel = undefined;
 				}
-				return {
-					'$term': { 
-						score: score + Object.keys(state.connector).length,
-						level: nextLevel,
-						instant: true
-					}
-				};
+				return Query.event('term', { 
+					score: score + Object.keys(state.connector).length,
+					level: nextLevel,
+					instant: true
+				});
 			}, level.seed + 2))
 		.add(UIUtils.animatedCloud('Score', Point.make(670, 550), Size.make(140, 100), 0, level.seed))
 		.apply(Entity.initSystem('pos', 'geometry', 'color', 'velocity', 

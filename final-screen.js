@@ -83,9 +83,7 @@ var FinalScreen = (function(exports) {
 			''
 		].concat(scoreFeedback)))
 		.add(Button.make('Back', Point.make(400, 500), BUTTON_SIZE, 'Return to Menu', function() {
-			return {
-				'$term': {}
-			};
+			return Query.event('term');
 		}))
 		.add(createFireworks(canvas.width, canvas.height))
 		.apply(Entity.initSystem('pos', 'geometry', 'color', 'highlighted', 'highlightable',

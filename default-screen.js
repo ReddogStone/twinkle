@@ -93,13 +93,7 @@ var DefaultScreen = (function(exports) {
 
 				switch (event.type) {
 					case 'term':
-						term = event.value;
-						break;
-					case 'button_clicked':
-						var reaction = event.value.reaction;
-						if (reaction['$term']) {
-							term = reaction['$term'];
-						}
+						term = event.value || {};
 						break;
 					default:
 						var newQueries = onEvent(state, event) || [];

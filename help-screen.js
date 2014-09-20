@@ -15,9 +15,7 @@ var HelpScreen = (function(exports) {
 			'Triangles formed by intersecting lines are ok, though.'
 		]))
 		.add(Button.make('start', Point.make(400, 530), BUTTON_SIZE, 'OK, I got it', function() {
-			return {
-				'$term': termSignal
-			};
+			return Query.event('term', termSignal);
 		}))
 		.apply(Entity.initSystem('pos', 'geometry', 'color', 'highlighted', 'highlightable',
 			'target', 'z', 'button', 'animation'));
