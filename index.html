@@ -27,11 +27,11 @@
 <script src="connector-system.js" type="text/javascript"></script>
 <script src="movement-system.js" type="text/javascript"></script>
 
-<script src="default-screen.js" type="text/javascript"></script>
-
+<script src="wrapper-screen.js" type="text/javascript"></script>
 <script src="sequence-screen.js" type="text/javascript"></script>
 <script src="repeat-screen.js" type="text/javascript"></script>
 <script src="if-screen.js" type="text/javascript"></script>
+<script src="default-screen.js" type="text/javascript"></script>
 
 <script src="root-screen.js" type="text/javascript"></script>
 <script src="game-screen.js" type="text/javascript"></script>
@@ -92,8 +92,8 @@ function onload() {
 		},
 		background: {
 			sources: [
-				{ url: 'music/background1.ogg', volume: 0.15 },
-				{ url: 'music/background2.ogg', volume: 0.3 }
+				{ url: 'music/background1.ogg', volume: 0.3 },
+				{ url: 'music/background2.ogg', volume: 0.6 }
 			],
 			loop: true,
 			onEnded: 'background'
@@ -107,7 +107,6 @@ function onload() {
 	var root = RootScreen.init(canvas);
 	var screen = root.screen;
 	var state = root.state;
-//	var screen = MenuScreen.init(canvas);
 
 	canvas.addEventListener('mousedown', function(event) {
 		state = screen.onMouseDown(state, getMousePos(canvas, event)).state;

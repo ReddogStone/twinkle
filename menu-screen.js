@@ -36,14 +36,15 @@ var MenuScreen = (function(exports) {
 		}
 		return res;
 	}
-	var scoreAndLevel = { score: 0, level: { starCount: 3, seed: Date.now() } };
 
 	exports.init = function(canvas) {
+		var scoreAndLevel = { score: 0, level: { starCount: 3, seed: Date.now() } };
 		var startWithHelp = Button.make('StartWithHelp',
 			Point.make(400, 280),
 			BUTTON_SIZE,
 			'Start with help', 
 			function() {
+				Sound.play('select');
 				return Query.event('term', Utils.setPropObj(scoreAndLevel, 'help', true));
 			});
 		var startWithoutHelp = Button.make('StartWithoutHelp',
@@ -51,6 +52,7 @@ var MenuScreen = (function(exports) {
 			BUTTON_SIZE,
 			'Start without help',
 			function() {
+				Sound.play('select');
 				return Query.event('term', scoreAndLevel);
 			});
 
