@@ -163,12 +163,17 @@ var DefaultScreen = (function(exports) {
 	}
 
 	exports.make = function(systems, params) {
+		params = params || {};
+		var onEvent = params.onEvent || function(state, event) {
+			console.log('Unhandled event: ' + JSON.stringify(event));
+			return [];
+		};
 		return {
 			draw: params.draw || draw,
-			update: makeUpdate(systems, params.onEvent),
-			onMouseDown: makeMouseDown(systems, params.onEvent),
-			onMouseMove: makeMouseMove(systems, params.onEvent),
-			onMouseUp: makeMouseUp(systems, params.onEvent)
+			update: makeUpdate(systems, onEvent),
+			onMouseDown: makeMouseDown(systems, onEvent),
+			onMouseMove: makeMouseMove(systems, onEvent),
+			onMouseUp: makeMouseUp(systems, onEvent)
 		};
 	};
 

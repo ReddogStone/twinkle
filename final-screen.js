@@ -61,19 +61,8 @@ var FinalScreen = (function(exports) {
 		return res;
 	}
 
-	function onEvent(world, event) {
-		switch (event.type) {
-			case 'button_clicked':
-				return {
-					next: event.value
-				};
-		}
-
-		console.log('Unhandled event: ' + JSON.stringify(event));
-		return {};
-	}
-
-	exports.init = function(canvas, score) {
+	exports.init = function(canvas, prevScreen, prevState, finalInfo) {
+		var score = finalInfo.score;
 		var scoreFeedback = '';
 		if (score < 30) {
 			scoreFeedback = ['You should try again for better score']
@@ -94,8 +83,8 @@ var FinalScreen = (function(exports) {
 			''
 		].concat(scoreFeedback)))
 		.add(Button.make('Back', Point.make(400, 500), BUTTON_SIZE, 'Return to Menu', function() {
-			return function(screen) {
-				return MenuScreen.init(canvas);
+			return {
+				'$term': {}
 			};
 		}))
 		.add(createFireworks(canvas.width, canvas.height))
@@ -103,15 +92,13 @@ var FinalScreen = (function(exports) {
 			'target', 'z', 'button', 'animation'));
 
 		return {
-			draw: DefaultScreen.draw,
-			world: world,
-			onEvent: onEvent,
-			systems: [
-				AnimationSystem,
-				HighlightSystem,
-				ButtonSystem,
-				MovementSystem
-			]
+			screen: DefaultScreen.make([
+					AnimationSystem,
+					HighlightSystem,
+					ButtonSystem,
+					MovementSystem
+				]),
+			state: world
 		};
 	};
 

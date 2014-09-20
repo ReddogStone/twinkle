@@ -257,23 +257,28 @@ var STAR_RADIUS = 15;
 					res.push(Query.upsertComponents('highlighted', 
 						getHighlightedTriangle(common, value.begin, value.end)));
 					res.push(Query.event('term', { score: world.score, level: world.level }));
-				}
+				} else {
+					var maxConnectionCount = calculateMaxConnectionCount(world.level.starCount);
+					var currentScore = Object.keys(world.connector).length + 1;
+					if (currentScore === maxConnectionCount) {
+						Sound.play('win');
+						res = res.concat(getWinText().map(function(entity) { 
+							return Query.addEntity(entity);
+						}));
 
-				var maxConnectionCount = calculateMaxConnectionCount(world.level.starCount);
-				var currentScore = Object.keys(world.connector).length + 1;
-				if (currentScore === maxConnectionCount) {
-					Sound.play('win');
-					res = res.concat(getWinText().map(function(entity) { return Query.addEntity(entity); }));
-
-					var nextLevel = undefined;
-					var currentLevel = world.level;
-					if (currentLevel.starCount < MAX_LEVEL) {
-						nextLevel = {
-							starCount: currentLevel.starCount + 1,
-							seed: currentLevel.seed + 1
-						};
+						var nextLevel = undefined;
+						var currentLevel = world.level;
+						if (currentLevel.starCount < MAX_LEVEL) {
+							nextLevel = {
+								starCount: currentLevel.starCount + 1,
+								seed: currentLevel.seed + 1
+							};
+						}
+						res.push(Query.event('term', {
+							score: world.score + currentScore,
+							level: nextLevel
+						}));
 					}
-					res.push(Query.event('term', { score: world.score + currentScore, level: nextLevel }));
 				}
 
 				return res;

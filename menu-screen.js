@@ -36,18 +36,7 @@ var MenuScreen = (function(exports) {
 		}
 		return res;
 	}
-
-	function onEvent(world, event) {
-		switch (event.type) {
-			case 'button_clicked':
-				return {
-					next: event.value
-				};
-		}
-
-		console.log('Unhandled event: ' + JSON.stringify(event));
-		return {};
-	}
+	var scoreAndLevel = { score: 0, level: { starCount: 3, seed: Date.now() } };
 
 	exports.init = function(canvas) {
 		var startWithHelp = Button.make('StartWithHelp',
@@ -55,8 +44,8 @@ var MenuScreen = (function(exports) {
 			BUTTON_SIZE,
 			'Start with help', 
 			function() {
-				return function(screen) {
-					return HelpScreen.init(canvas);
+				return {
+					'$term': Utils.setPropObj(scoreAndLevel, 'help', true)
 				};
 			});
 		var startWithoutHelp = Button.make('StartWithoutHelp',
@@ -64,9 +53,9 @@ var MenuScreen = (function(exports) {
 			BUTTON_SIZE,
 			'Start without help',
 			function() {
-				return function(screen) {
-					return GameScreen.firstLevel(canvas);
-				}
+				return {
+					'$term': scoreAndLevel
+				};
 			});
 
 		var world = Entity.accumulator()
@@ -77,15 +66,13 @@ var MenuScreen = (function(exports) {
 			'target', 'z', 'button', 'animation'));
 
 		return {
-			world: world,
-			draw: DefaultScreen.draw,
-			onEvent: onEvent,
-			systems: [
-				AnimationSystem,
-				HighlightSystem,
-				ButtonSystem,
-				MovementSystem
-			]
+			screen: DefaultScreen.make([
+					AnimationSystem,
+					HighlightSystem,
+					ButtonSystem,
+					MovementSystem
+				]),
+			state: world
 		};
 	};
 
