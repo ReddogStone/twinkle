@@ -1,8 +1,0 @@
-TODO:
-
-- Allow to restart a level => DONE
-- Allow progression (Levels) => DONE
-- Total score => DONE
-- Decorative animations => Mostly DONE
-- Sounds => More or less DONE
-- Music => DONE
