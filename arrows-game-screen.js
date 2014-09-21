@@ -135,7 +135,7 @@ var STAR_RADIUS = 15;
 	function getLoseText() {
 		return [
 			{
-				id: 'LoseText',
+				id: 'loseText',
 				pos: {x: 400, y: END_GAME_OFF + END_GAME_TOP},
 				z: Layers.TEXT + 1,
 				geometry: { type: 'text', text: 'YOU LOSE!', size: 3, align: 'center', border: 0 },
@@ -143,7 +143,7 @@ var STAR_RADIUS = 15;
 				target: {x: 400, y: END_GAME_TOP}
 			},
 			{
-				id: 'LoseText2',
+				id: 'loseText2',
 				pos: {x: 400, y: END_GAME_OFF + END_GAME_TOP + 70},
 				z: Layers.TEXT + 1,
 				geometry: { type: 'text', text: 'Wrong triangle! Click to restart', size: 2, align: 'center', border: 0 },
@@ -151,7 +151,7 @@ var STAR_RADIUS = 15;
 				target: {x: 400, y: END_GAME_TOP + 70}
 			},
 			{
-				id: 'loseCloud',
+				id: 'endGameCloud',
 				pos: {x: 400, y: END_GAME_OFF + END_GAME_TOP + 60},
 				target: {x: 400, y: END_GAME_TOP + 60},
 				geometry: {
@@ -170,7 +170,7 @@ var STAR_RADIUS = 15;
 	function getWinText() {
 		return [
 			{
-				id: 'WinText',
+				id: 'winText',
 				pos: {x: 400, y: END_GAME_OFF + END_GAME_TOP},
 				z: Layers.TEXT + 1,
 				geometry: { type: 'text', text: 'WELL DONE!', size: 3, align: 'center', border: 0 },
@@ -178,7 +178,7 @@ var STAR_RADIUS = 15;
 				target: {x: 400, y: END_GAME_TOP}
 			},
 			{
-				id: 'WinText2',
+				id: 'winText2',
 				pos: {x: 400, y: END_GAME_OFF + END_GAME_TOP + 70},
 				z: Layers.TEXT + 1,
 				geometry: { type: 'text', text: 'Click to continue', size: 2, align: 'center', border: 0 },
@@ -186,7 +186,7 @@ var STAR_RADIUS = 15;
 				target: {x: 400, y: END_GAME_TOP + 70}
 			},
 			{
-				id: 'loseCloud',
+				id: 'endGameCloud',
 				pos: {x: 400, y: END_GAME_OFF + END_GAME_TOP + 60},
 				target: {x: 400, y: END_GAME_TOP + 60},
 				geometry: {
@@ -244,6 +244,9 @@ var STAR_RADIUS = 15;
 				var common = commonNeighbor(state.successor[value.begin], state.successor[value.end]);
 				if (!common) {
 					common = commonNeighbor(state.predecessor[value.begin], state.predecessor[value.end]);
+				}
+				if (!common) {
+					common = commonNeighbor(state.successor[value.begin], state.predecessor[value.end]);
 				}
 				if (common) {
 					Sound.play('lose');

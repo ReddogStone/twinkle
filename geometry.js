@@ -38,6 +38,10 @@ var Geom = (function(exports) {
 		var c = Math.cos(angle);
 
 		var dist = Point.dist(p1, p2);
+		if (dist < 2 * headOffset) {
+			return;
+		}
+
 		var vx = (p1.x - p2.x) / dist;
 		var vy = (p1.y - p2.y) / dist;
 
