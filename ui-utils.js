@@ -25,7 +25,7 @@ var UIUtils = (function(exports) {
 			});
 		}
 
-		return SmartObject.fromObj({
+		return {
 			id: 'cloud' + id,
 			pos: pos,
 			geometry: {
@@ -54,7 +54,7 @@ var UIUtils = (function(exports) {
 					}
 				}
 			]
-		});
+		};
 	};
 
 	exports.animatedStar = function(id, pos, z, radius, border, seed) {
@@ -79,7 +79,7 @@ var UIUtils = (function(exports) {
 			offset: 0
 		};
 
-		return SmartObject.fromObj({
+		return {
 			id: id,
 			pos: pos,
 			z: z,
@@ -111,7 +111,7 @@ var UIUtils = (function(exports) {
 					return Utils.mergeObjects(geom, { points: newPoints, border: border * b });
 				}
 			}]
-		});
+		};
 	};
 
 	return exports;

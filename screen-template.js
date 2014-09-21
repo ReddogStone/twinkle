@@ -14,7 +14,7 @@ var ScreenTemplate = (function(exports) {
 						termCondition: function(termSignal) { return !termSignal.level; },
 						screen: {
 							if: {
-								first: GameScreen,
+								first: ArrowsGameScreen,
 								condition: function(termSignal) { return !termSignal.instant; },
 								second: EndGameScreen
 							}

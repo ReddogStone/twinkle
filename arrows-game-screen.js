@@ -1,4 +1,4 @@
-var GameScreen = (function(exports) {
+var ArrowsGameScreen = (function(exports) {
 var STAR_RADIUS = 15;
 	var STAR_BORDER = 2;
 	var STAR_RAYS = 10;
@@ -20,7 +20,7 @@ var STAR_RADIUS = 15;
 			id: 'curConnector',
 			z: Layers.CONNECTORS,
 			halfConnector: { begin: startId, end: Point.clone(mousePos) },
-			geometry: { type: 'line', width: CONNECTOR_WIDTH },
+			geometry: { type: 'arrow', width: CONNECTOR_WIDTH },
 			color: Colors.CONNECTOR
 		};
 	}
@@ -33,23 +33,22 @@ var STAR_RADIUS = 15;
 				begin: connection.begin,
 				end: connection.end
 			},
-			geometry: { type: 'line', width: CONNECTOR_WIDTH },
+			geometry: { type: 'arrow', width: CONNECTOR_WIDTH },
 			color: Colors.CONNECTOR
 		};
 	}
 
-	function newNeighbors(connection, neighbors) {
-		var addBegin = {};
-		addBegin[connection.begin] = true;
-		var addEnd = {};
-		addEnd[connection.end] = true;
-
-		var beginNeighbors = neighbors[connection.begin] || {};
-		var endNeighbors = neighbors[connection.end] || {};
-
+	function newSuccessor(connection, successors) {
+		var beginSuccessors = successors[connection.begin] || {};
 		var res = {};
-		res[connection.begin] = Utils.mergeObjects(beginNeighbors, addEnd);
-		res[connection.end] = Utils.mergeObjects(endNeighbors, addBegin);
+		res[connection.begin] = Utils.setPropObj(beginSuccessors, connection.end, true);
+		return res;
+	}
+
+	function newPredecessor(connection, predecessors) {
+		var beginPredecessors = predecessors[connection.end] || {};
+		var res = {};
+		res[connection.end] = Utils.setPropObj(beginPredecessors, connection.begin, true);
 		return res;
 	}
 
@@ -147,7 +146,7 @@ var STAR_RADIUS = 15;
 				id: 'LoseText2',
 				pos: {x: 400, y: END_GAME_OFF + END_GAME_TOP + 70},
 				z: Layers.TEXT + 1,
-				geometry: { type: 'text', text: 'No triangles! Click to restart', size: 2, align: 'center', border: 0 },
+				geometry: { type: 'text', text: 'Wrong triangle! Click to restart', size: 2, align: 'center', border: 0 },
 				color: Colors.LOSE_TEXT,
 				target: {x: 400, y: END_GAME_TOP + 70}
 			},
@@ -204,9 +203,10 @@ var STAR_RADIUS = 15;
 	}
 
 	function calculateMaxConnectionCount(starCount) {
-		var group1 = Math.floor(starCount * 0.5);
-		var group2 = starCount - group1;
-		return group1 * group2;
+		var group1 = Math.floor(starCount / 3);
+		var group2 = Math.floor((starCount - group1) / 2);
+		var group3 = starCount - group1 - group2;
+		return group1 * group2 + group2 * group3 + group3 * group1;
 	}
 
 	function draw(state, context) {
@@ -228,18 +228,23 @@ var STAR_RADIUS = 15;
 			case 'connection_aborted':
 				return Query.removeEntity('curConnector');
 			case 'connection_closed':
-				if (state.neighbor[value.begin] && state.neighbor[value.begin][value.end]) {
+				if ((state.successor[value.begin] && state.successor[value.begin][value.end]) ||
+					(state.predecessor[value.begin] && state.predecessor[value.begin][value.end])) {
 					return Query.removeEntity('curConnector');
 				}
 
 				Sound.play('connect');
 				var res = [
-					Query.upsertComponents('neighbor', newNeighbors(value, state.neighbor)),
+					Query.upsertComponents('successor', newSuccessor(value, state.successor)),
+					Query.upsertComponents('predecessor', newPredecessor(value, state.predecessor)),
 					Query.addEntity(createConnector(value)),
 					Query.removeEntity('curConnector')
 				];
 
-				var common = commonNeighbor(state.neighbor[value.begin], state.neighbor[value.end]);
+				var common = commonNeighbor(state.successor[value.begin], state.successor[value.end]);
+				if (!common) {
+					common = commonNeighbor(state.predecessor[value.begin], state.predecessor[value.end]);
+				}
 				if (common) {
 					Sound.play('lose');
 					res = res.concat(getLoseText().map(function(entity) { 
@@ -312,8 +317,8 @@ var STAR_RADIUS = 15;
 		.add(UIUtils.animatedCloud('Score', Point.make(670, 550), Size.make(140, 100), 0, level.seed))
 		.apply(Entity.initSystem('pos', 'geometry', 'color', 'velocity', 
 			'draggable', 'dragOffset', 'target', 'targetRadius', 'highlighted', 'highlightable',
-			'connector', 'halfConnector', 'starSet', 'neighbor', 'z', 'button', 'animation',
-			'star'));
+			'connector', 'halfConnector', 'starSet', 'predecessor', 'successor', 'z', 
+			'button', 'animation', 'star'));
 
 		myWorld.score = score;
 		myWorld.level = level;
@@ -332,4 +337,4 @@ var STAR_RADIUS = 15;
 	};
 
 	return exports;
-})(GameScreen || {});
+})(ArrowsGameScreen || {});

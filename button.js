@@ -6,8 +6,8 @@ var Button = (function(exports) {
 	};
 
 	exports.make = function(id, pos, size, text, onClick, seed) {
-		var cloud = UIUtils.animatedCloud(id, pos, size, 10, seed)
-			.set('button', { pressed: false, onClick: onClick });
+		var cloud = UIUtils.animatedCloud(id, pos, size, 10, seed);
+		var button = Utils.setPropObj(cloud, 'button', { pressed: false, onClick: onClick });
 		var text = {
 			id: 'text' + id,
 			pos: Point.make(pos.x, pos.y - 10),
@@ -21,7 +21,7 @@ var Button = (function(exports) {
 			color: Colors.Button.TEXT,
 			z: 11
 		};
-		return [cloud, text];
+		return [button, text];
 	};
 
 	return exports;

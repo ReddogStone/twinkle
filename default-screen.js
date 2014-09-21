@@ -1,7 +1,6 @@
 var DefaultScreen = (function(exports) {
 	function draw(state, context) {
-		Geom.draw(context, state.pos, state.geometry, state.color, state.highlighted,
-			state.halfConnector, state.connector, state.z);
+		Geom.draw(context, state.pos, state.geometry, state.color, state.highlighted, state.z);
 	};
 
 	function processComponentUpdates(state, updatesByType) {

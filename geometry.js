@@ -29,6 +29,49 @@ var Geom = (function(exports) {
 		context.stroke();
 	};
 
+	exports.drawArrow = function(context, p1, p2, width, color) {
+		var angle = 0.05 * Math.PI;
+		var headSize = 20;
+		var headOffset = 15;
+
+		var s = Math.sin(angle);
+		var c = Math.cos(angle);
+
+		var dist = Point.dist(p1, p2);
+		var vx = (p1.x - p2.x) / dist;
+		var vy = (p1.y - p2.y) / dist;
+
+		var endX = p2.x + vx * headOffset;
+		var endY = p2.y + vy * headOffset;
+
+		var rot1x = c * vx - s * vy;
+		var rot1y = c * vy + s * vx;
+		var rot2x = c * vx + s * vy;
+		var rot2y = c * vy - s * vx;
+
+		var head1x = endX + rot1x * headSize;
+		var head1y = endY + rot1y * headSize;
+		var head2x = endX + rot2x * headSize;
+		var head2y = endY + rot2y * headSize;
+
+		context.strokeStyle = color;
+		context.lineWidth = width;
+
+		context.beginPath();
+		context.moveTo(p1.x, p1.y);
+		context.lineTo(endX, endY);
+		context.stroke();
+
+		context.fillStyle = color;
+		context.beginPath();
+		context.moveTo(endX, endY);
+		context.lineTo(head1x, head1y);
+		context.lineTo(endX + vx * headOffset, endY + vy * headOffset);
+		context.lineTo(head2x, head2y);
+		context.closePath();
+		context.fill();
+	}
+
 	exports.drawStar = function(context, pos, radius, points, borderWidth, color, borderColor) {
 		context.fillStyle = color;
 		context.strokeStyle = borderColor;
@@ -151,13 +194,13 @@ var Geom = (function(exports) {
 		return false;
 	};
 
-	exports.draw = function(context, positions, geometries, colors, highlighteds, 
-		halfConnectors, connectors, zeds) {
+	exports.draw = function(context, positions, geometries, colors, highlighteds, zeds) {
 		var ids = Object.keys(geometries).sort(function(id1, id2) {
 			return zeds[id1] - zeds[id2];
 		});
 
-		ids.forEach(function(id) {
+		for (var i = 0; i < ids.length; i++) {
+			var id = ids[i];
 			var geom = geometries[id];
 			var pos = positions[id];
 			var color = colors[id];
@@ -174,15 +217,12 @@ var Geom = (function(exports) {
 						geom.border, color.primary, highlighted ? color.highlighted : color.secondary);
 					break;
 				case 'line':
-					if (halfConnectors[id]) {
-						var hc = halfConnectors[id];
-						exports.drawLine(context, positions[hc.begin], hc.end, geom.width, 
-							highlighted ? color.highlighted : color.primary);
-					} else if (connectors[id]) {
-						var c = connectors[id];
-						exports.drawLine(context, positions[c.begin], positions[c.end], geom.width,
-							highlighted ? color.highlighted : color.primary);
-					}
+					exports.drawLine(context, geom.begin, geom.end, geom.width,
+						highlighted ? color.highlighted : color.primary);
+					break;
+				case 'arrow':
+					exports.drawArrow(context, geom.begin, geom.end, geom.width,
+						highlighted ? color.highlighted : color.primary);
 					break;
 				case 'text':
 					exports.drawText(context, geom.text, pos, geom.size, geom.align,
@@ -193,7 +233,7 @@ var Geom = (function(exports) {
 						geom.border, color.primary, color.secondary);
 					break;
 			}
-		});
+		}
 	};
 
 	return exports;

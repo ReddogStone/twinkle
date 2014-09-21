@@ -20,7 +20,7 @@ var ConnectorSystem = (function(exports) {
 
 				var begin = halfConnector.begin;
 				var end = hoveredId;
-				if ((begin !== end) && !(state.neighbor[begin] && state.neighbor[begin][end]) ) {
+				if (begin !== end) {
 					return Query.event('connection_closed', {
 						begin: begin,
 						end: end
@@ -32,14 +32,36 @@ var ConnectorSystem = (function(exports) {
 		}
 	};
 
-	exports.onMouseMove = function(world, mousePos) {
-		var halfConnector = Utils.mapObj(world.halfConnector, function(id, halfConnector) {
+	exports.onMouseMove = function(state, mousePos) {
+		var halfConnector = Utils.mapObj(state.halfConnector, function(id, halfConnector) {
 			return {
 				begin: halfConnector.begin,
 				end: Point.clone(mousePos)
 			};
 		});
 		return Query.upsertComponents('halfConnector', halfConnector);
+	};
+
+	exports.update = function(state, deltaTime, time) {
+		var halfConnectorLines = Utils.mapObj(state.halfConnector, function(id, halfConnector) {
+			var line = state.geometry[id];
+			var beginPos = state.pos[halfConnector.begin];
+			return Utils.mergeObjects(line, {
+				begin: beginPos,
+				end: halfConnector.end
+			});
+		});
+		var connectorLines = Utils.mapObj(state.connector, function(id, connector) {
+			var line = state.geometry[id];
+			var beginPos = state.pos[connector.begin];
+			var endPos = state.pos[connector.end];
+			return Utils.mergeObjects(line, {
+				begin: beginPos,
+				end: endPos
+			});
+		});
+		var lines = Utils.mergeObjects(halfConnectorLines, connectorLines);
+		return Query.upsertComponents('geometry', lines);
 	};
 
 	return exports;
