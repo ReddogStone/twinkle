@@ -1,6 +1,35 @@
 var DefaultScreen = (function(exports) {
 	function draw(state, context) {
+		var starGeoms = Utils.filterObj(state.geometry, function(id, geom) {
+			return (geom.type === 'star');
+		});
+		var stars = Utils.mapObj(starGeoms, function(id, geom) {
+			var color = state.color[id];
+			var highlighted = state.highlighted[id];
+			return {
+				geometry: {
+					transform: state.pos[id],
+					data: {
+						radius: geom.radius,
+						points: geom.points
+					}
+				},
+				params: {
+					color: color.primary,
+					borderColor: highlighted ? color.highlighted : color.secondary,
+					borderWidth: geom.border
+				}
+			};
+		});
+		var starRenderScript = context.renderScriptCache['render-scripts/star.js'];
+
 		Geom.draw(context, state.pos, state.geometry, state.color, state.highlighted, state.z);
+
+		if (starRenderScript) {
+			Utils.forEachObj(stars, function(id, star) {
+				starRenderScript({context: context}, [star.geometry], star.params);
+			});
+		}
 	};
 
 	function processComponentUpdates(state, updatesByType) {

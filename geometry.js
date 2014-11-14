@@ -216,10 +216,10 @@ var Geom = (function(exports) {
 				case 'circle':
 					exports.drawCircle(context, pos, geom.radius, geom.border, color);
 					break;
-				case 'star':
+/*				case 'star':
 					exports.drawStar(context, pos, geom.radius, geom.points, 
 						geom.border, color.primary, highlighted ? color.highlighted : color.secondary);
-					break;
+					break; */
 				case 'line':
 					exports.drawLine(context, geom.begin, geom.end, geom.width,
 						highlighted ? color.highlighted : color.primary);
