@@ -1,5 +1,3 @@
-console.log('Loaded "star.js"');
-
 ScriptLoader.module(function() {
 	function drawStar(context, radius, points, needStroke) {
 		context.beginPath();
