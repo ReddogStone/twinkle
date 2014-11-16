@@ -36,8 +36,6 @@ var DefaultScreen = (function(exports) {
 			};
 		});
 
-		Geom.draw(graphics.context, state.pos, state.geometry, state.color, state.highlighted, state.z);
-
 		var ids = Object.keys(objects).sort(function(id1, id2) {
 			return state.z[id1] - state.z[id2];
 		});
@@ -48,6 +46,8 @@ var DefaultScreen = (function(exports) {
 				obj.render(graphics, time, deltaTime, [obj.geometry], obj.params);
 			}
 		}
+
+		Geom.draw(graphics.context, state.pos, state.geometry, state.color, state.highlighted, state.z);
 	};
 
 	function processComponentUpdates(state, updatesByType) {

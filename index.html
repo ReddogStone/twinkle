@@ -71,6 +71,9 @@ function onload() {
 	var renderScriptCache = {};
 	ScriptLoader.load('game/assets/render-scripts/star.js', {}, function(err, script, cache) {
 		ScriptLoader.load('game/assets/render-scripts/cloud.js', cache, function(err, script, cache) {
+			if (err) {
+				return console.log('ERROR IN SCRIPT: ' + err);
+			}
 			renderScriptCache = cache;
 		});
 	});
@@ -78,6 +81,9 @@ function onload() {
 	document.getElementById('btnReload').addEventListener('click', function() {
 		ScriptLoader.load('game/assets/render-scripts/star.js', {}, function(err, script, cache) {
 			ScriptLoader.load('game/assets/render-scripts/cloud.js', cache, function(err, script, cache) {
+				if (err) {
+					return console.log('ERROR IN SCRIPT: ' + err);
+				}
 				renderScriptCache = cache;
 			});
 		});
