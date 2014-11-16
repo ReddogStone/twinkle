@@ -12,12 +12,13 @@ var Colors = (function(exports) {
 		primary: 'LightSteelBlue',
 		highlighted: 'orangered'
 	};
-	exports.Button = {
-		NORMAL: { primary: 'lightskyblue', secondary: '#6F7190' },
-		HOVERED: { primary: 'lightskyblue', secondary: 'indianred' },
-		PRESSED: { primary: 'cadetblue', secondary: 'brown' },
-		TEXT: { primary: '#24274F' }
+	exports.BUTTON = {
+		normal: { primary: 'lightskyblue', secondary: '#6F7190' },
+		hovered: { primary: 'lightskyblue', secondary: 'indianred' },
+		pressed: { primary: 'cadetblue', secondary: 'brown' },
 	};
+
+	exports.BUTTON_TEXT = { primary: '#24274F' };
 	exports.LOSE_TEXT = {
 		primary: 'darkblue',
 		secondary: 'darkblue'

@@ -12,7 +12,7 @@ var Button = (function(exports) {
 				align: 'center',
 				border: 0
 			},
-			color: Colors.Button.TEXT,
+			color: Colors.BUTTON_TEXT,
 			z: 11
 		};
 		return [button, text];

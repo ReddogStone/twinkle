@@ -181,15 +181,15 @@ var Geom = (function(exports) {
 		return circles;
 	};
 
-	exports.pointInside = function(point, pos, geom) {
+	exports.pointInside = function(point, pos, size, geom) {
 		if (!geom) {
 			return false;
 		}
 		switch (geom.type) {
 			case 'rect': return Point.inRect(point, Rect.posSize(pos, Size.make(geom.sx, geom.sy)));
 			case 'cloud': 
-				var sx = geom.sx * 1.9;
-				var sy = geom.sy * 1.6;
+				var sx = size.x * 1.9;
+				var sy = size.y * 1.6;
 				return Point.inRect(point, 
 					Rect.coords(pos.x - sx * 0.5, pos.y - sy * 0.6, sx, sy));
 			case 'circle': return Point.inCircle(point, pos, geom.radius);
@@ -232,10 +232,10 @@ var Geom = (function(exports) {
 					exports.drawText(context, geom.text, pos, geom.size, geom.align,
 						geom.border, color.primary, color.secondary);
 					break;
-				case 'cloud':
+/*				case 'cloud':
 					exports.drawCloud(context, pos, Size.make(geom.sx, geom.sy), geom.circles, 
 						geom.border, color.primary, color.secondary);
-					break;
+					break; */
 			}
 		}
 	};

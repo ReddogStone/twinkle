@@ -122,10 +122,18 @@ var STAR_RADIUS = 15;
 				geometry: {
 					type: 'star',
 					radius: STAR_RADIUS * 0.1,
-					border: 0,
-					points: Geom.createStar(4, prng())
+					points: Geom.createStar(4, prng()),
+					border: {
+						width: 0
+					},
 				},
-				color: Colors.STAR,
+				material: {
+					color: Colors.STAR,
+					renderScript: {
+						id: 'game/assets/render-scripts/star.js',
+						mode: 'default'
+					}
+				},
 				animation: createDecorationStarAnimation(prng() * 0.02 + 0.03, 2, off)
 			});
 		}
@@ -209,15 +217,18 @@ var STAR_RADIUS = 15;
 		return group1 * group2;
 	}
 
-	function draw(state, context) {
-		DefaultScreen.draw(state, context);
+	function draw(state, graphics, time, deltaTime) {
+		DefaultScreen.draw(state, graphics, time, deltaTime);
+
+		var context = graphics.context;
+		
 		var currentScore = Object.keys(state.connector).length;
 		Geom.drawText(context, 'Level Score: ' + currentScore,
-			Point.make(670, 510), 1.3, 'center', 0, Colors.Button.TEXT.primary);
+			Point.make(670, 510), 1.3, 'center', 0, BUTTON_TEXT.primary);
 		Geom.drawText(context, 'Possible Score: ' + state.possibleScore,
-			Point.make(670, 535), 1.3, 'center', 0, Colors.Button.TEXT.primary);
+			Point.make(670, 535), 1.3, 'center', 0, BUTTON_TEXT.primary);
 		Geom.drawText(context, 'Total Score: ' + (state.score + currentScore),
-			Point.make(670, 560), 1.3, 'center', 0, Colors.Button.TEXT.primary);
+			Point.make(670, 560), 1.3, 'center', 0, BUTTON_TEXT.primary);
 	}
 
 	function onEvent(state, event) {

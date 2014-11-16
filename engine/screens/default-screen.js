@@ -1,34 +1,52 @@
 var DefaultScreen = (function(exports) {
-	function draw(state, context) {
-		var starGeoms = Utils.filterObj(state.geometry, function(id, geom) {
-			return (geom.type === 'star');
-		});
-		var stars = Utils.mapObj(starGeoms, function(id, geom) {
-			var color = state.color[id];
+	function draw(state, graphics, time, deltaTime) {
+		var objects = Utils.mapObj(state.material, function(id, material) {
+			var geom = state.geometry[id];
+			var color = material.color;
 			var highlighted = state.highlighted[id];
-			return {
-				geometry: {
-					transform: state.pos[id],
-					data: {
-						radius: geom.radius,
-						points: geom.points
-					}
-				},
-				params: {
-					color: color.primary,
-					borderColor: highlighted ? color.highlighted : color.secondary,
-					borderWidth: geom.border
+			var renderScript = graphics.assets.renderScripts[material.renderScript.id];
+			var renderFunc = renderScript ? renderScript[material.renderScript.mode] : null;
+
+			var pos = state.pos[id];
+			var size = state.size[id];
+			var transform = {x: pos.x, y: pos.y};
+			if (size) {
+				transform.sx = size.x;
+				transform.sy = size.y;
+			}
+
+			var params = {
+				color: {
+					primary: color.primary,
+					secondary: highlighted ? color.highlighted : color.secondary
 				}
 			};
+			var button = state.button[id];
+			if (button) {
+				params.color = highlighted ? (button.pressed ? color.pressed : color.hovered) : color.normal;
+			}
+
+			return {
+				geometry: {
+					transform: transform,
+					data: geom
+				},
+				params: params,
+				render: renderFunc
+			};
 		});
-		var starRenderScript = context.renderScriptCache['render-scripts/star.js'];
 
-		Geom.draw(context, state.pos, state.geometry, state.color, state.highlighted, state.z);
+		Geom.draw(graphics.context, state.pos, state.geometry, state.color, state.highlighted, state.z);
 
-		if (starRenderScript) {
-			Utils.forEachObj(stars, function(id, star) {
-				starRenderScript({context: context}, [star.geometry], star.params);
-			});
+		var ids = Object.keys(objects).sort(function(id1, id2) {
+			return state.z[id1] - state.z[id2];
+		});
+
+		for (var i = 0; i < ids.length; i++) {
+			var obj = objects[ids[i]];
+			if (obj.render) {
+				obj.render(graphics, time, deltaTime, [obj.geometry], obj.params);
+			}
 		}
 	};
 

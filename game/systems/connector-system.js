@@ -1,6 +1,6 @@
 var ConnectorSystem = (function(exports) {
 	exports.onMouseDown = function(state, mousePos) {
-		var hovered = UIUtils.getMouseOffsets(mousePos, state.pos, state.geometry, state.star);
+		var hovered = UIUtils.getMouseOffsets(mousePos, state.pos, state.size, state.geometry, state.star);
 		var hoveredId = Object.keys(hovered)[0];
 		if (hoveredId) {
 			return Query.event('connection_started', {
@@ -11,7 +11,7 @@ var ConnectorSystem = (function(exports) {
 	};
 
 	exports.onMouseUp = function(state, mousePos) {
-		var hovered = UIUtils.getMouseOffsets(mousePos, state.pos, state.geometry, state.star);
+		var hovered = UIUtils.getMouseOffsets(mousePos, state.pos, state.size, state.geometry, state.star);
 		var hoveredId = Object.keys(hovered)[0];
 		var halfConnectorId = Object.keys(state.halfConnector)[0];
 		if (halfConnectorId) {

@@ -69,13 +69,17 @@ function getMousePos(canvas, evt) {
 
 function onload() {
 	var renderScriptCache = {};
-	ScriptLoader.load('render-scripts/star.js', {}, function(err, script, cache) {
-		renderScriptCache = cache;
+	ScriptLoader.load('game/assets/render-scripts/star.js', {}, function(err, script, cache) {
+		ScriptLoader.load('game/assets/render-scripts/cloud.js', cache, function(err, script, cache) {
+			renderScriptCache = cache;
+		});
 	});
 
 	document.getElementById('btnReload').addEventListener('click', function() {
-		ScriptLoader.load('render-scripts/star.js', {}, function(err, script, cache) {
-			renderScriptCache = cache;
+		ScriptLoader.load('game/assets/render-scripts/star.js', {}, function(err, script, cache) {
+			ScriptLoader.load('game/assets/render-scripts/cloud.js', cache, function(err, script, cache) {
+				renderScriptCache = cache;
+			});
 		});
 	}, false);
 
@@ -136,7 +140,7 @@ function onload() {
 		state = screen.onMouseMove(state, getMousePos(canvas, event)).state;
 	}, false);
 
-	var lastTime = Time.now();
+	var lastTime = Time.now() * 0.001;
 
 	var gradient = context.createLinearGradient(0, -5 * canvas.height, 0, canvas.height);
 	gradient.addColorStop(0, Colors.BACKGROUND.primary);
@@ -144,20 +148,26 @@ function onload() {
 
 	var frameTimes = [];
 	var animate = function() {
-		var time = Time.now();
+		var time = Time.now() * 0.001;
 		var deltaTime = time - lastTime;
 		lastTime = time;
 
 		context.fillStyle = gradient;
 		context.fillRect(0, 0, canvas.width, canvas.height);
 
-		state = screen.update(state, deltaTime * 0.001, time * 0.001).state;
-		context.renderScriptCache = renderScriptCache;
-		screen.draw(state, context);
+		state = screen.update(state, deltaTime, time).state;
+
+		var graphics = {
+			context: context,
+			assets: {
+				renderScripts: renderScriptCache
+			}
+		};
+		screen.draw(state, graphics, time, deltaTime);
 
 		// Frame time statistics
 		var BUFFER_SIZE = 100;
-		var frameDelta = Time.now() - time;
+		var frameDelta = Time.now() * 0.001 - time;
 		frameTimes.push(frameDelta);
 		if (frameTimes.length > BUFFER_SIZE) {
 			frameTimes = frameTimes.slice(frameTimes.length - BUFFER_SIZE);

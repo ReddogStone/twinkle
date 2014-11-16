@@ -7,8 +7,8 @@ var WrapperScreen = (function(exports) {
 		};
 	};
 
-	function draw(state, context) {
-		state.screen.draw(state.state, context);
+	function draw(state, graphics, time, deltaTime) {
+		state.screen.draw(state.state, graphics, time, deltaTime);
 	}
 
 	function makeReact(funcName, wrapper) {
