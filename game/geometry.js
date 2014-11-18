@@ -228,11 +228,11 @@ var Geom = (function(exports) {
 					exports.drawArrow(context, geom.begin, geom.end, geom.width,
 						highlighted ? color.highlighted : color.primary);
 					break;
-				case 'text':
+/*				case 'text':
 					exports.drawText(context, geom.text, pos, geom.size, geom.align,
 						geom.border, color.primary, color.secondary);
 					break;
-/*				case 'cloud':
+				case 'cloud':
 					exports.drawCloud(context, pos, Size.make(geom.sx, geom.sy), geom.circles, 
 						geom.border, color.primary, color.secondary);
 					break; */

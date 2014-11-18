@@ -18,24 +18,13 @@ var ScriptLoader = (function() {
 		script.onerror = function() {
 			callback(new Error('Could not load: ' + url));
 		};
-		window.onerror = function() {
+/*		window.onerror = function() {
 			callback(new Error('Syntax error: ' + JSON.stringify(arguments)));
 			return true;
-		};
+		}; */
 
 		head.appendChild(script);
 		script.src = url;
-	}
-
-	function makeModuleFunc(id, cache, callback) {
-		return function(init) {
-			try {
-				cache[id] = init();
-//				console.log('Loaded module from "' + id + '"');
-			} catch (e) {
-				return callback(e);
-			}
-		};
 	}
 
 	function clone(obj) {
@@ -46,21 +35,33 @@ var ScriptLoader = (function() {
 		return res;
 	}
 
-	var me = {
+	var scriptQueue = {};
+
+	return {
+		module: function(init) {
+			var id = document.currentScript.getAttribute('src', -1);
+
+			try {
+				scriptQueue[id] = init();
+//				console.log('Loaded module from "' + id + '"');
+			} catch (e) {
+				return callback(e);
+			}			
+		},
 		load: function(url, cache, callback) {
 			var resultCache = clone(cache);
-			me.module = makeModuleFunc(url, resultCache, callback);
 			loadScript(url, function(err) {
 				if (err) {
 					return callback(err);
 				}
 
+				resultCache[url] = scriptQueue[url];
+				delete scriptQueue[url];
+
 //				console.log('Loaded "' + url + '"');
 
-				delete me.module;
 				callback(null, resultCache[url], resultCache);
 			});
 		}
 	};
-	return me;
 })();

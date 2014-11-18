@@ -147,7 +147,13 @@ var STAR_RADIUS = 15;
 				pos: {x: 400, y: END_GAME_OFF + END_GAME_TOP},
 				z: Layers.TEXT + 1,
 				geometry: { type: 'text', text: 'YOU LOSE!', size: 3, align: 'center', border: 0 },
-				color: Colors.LOSE_TEXT,
+				material: {
+					color: Colors.LOSE_TEXT,
+					renderScript: {
+						id: 'game/assets/render-scripts/text.js',
+						mode: 'default'
+					}
+				},
 				target: {x: 400, y: END_GAME_TOP}
 			},
 			{
@@ -155,7 +161,13 @@ var STAR_RADIUS = 15;
 				pos: {x: 400, y: END_GAME_OFF + END_GAME_TOP + 70},
 				z: Layers.TEXT + 1,
 				geometry: { type: 'text', text: 'Wrong triangle! Click to restart', size: 2, align: 'center', border: 0 },
-				color: Colors.LOSE_TEXT,
+				material: {
+					color: Colors.LOSE_TEXT,
+					renderScript: {
+						id: 'game/assets/render-scripts/text.js',
+						mode: 'default'
+					}
+				},
 				target: {x: 400, y: END_GAME_TOP + 70}
 			},
 			{
@@ -187,7 +199,13 @@ var STAR_RADIUS = 15;
 				pos: {x: 400, y: END_GAME_OFF + END_GAME_TOP},
 				z: Layers.TEXT + 1,
 				geometry: { type: 'text', text: 'WELL DONE!', size: 3, align: 'center', border: 0 },
-				color: Colors.LOSE_TEXT,
+				material: {
+					color: Colors.LOSE_TEXT,
+					renderScript: {
+						id: 'game/assets/render-scripts/text.js',
+						mode: 'default'
+					}
+				},
 				target: {x: 400, y: END_GAME_TOP}
 			},
 			{
@@ -195,7 +213,13 @@ var STAR_RADIUS = 15;
 				pos: {x: 400, y: END_GAME_OFF + END_GAME_TOP + 70},
 				z: Layers.TEXT + 1,
 				geometry: { type: 'text', text: 'Click to continue', size: 2, align: 'center', border: 0 },
-				color: Colors.LOSE_TEXT,
+				material: {
+					color: Colors.LOSE_TEXT,
+					renderScript: {
+						id: 'game/assets/render-scripts/text.js',
+						mode: 'default'
+					}
+				},
 				target: {x: 400, y: END_GAME_TOP + 70}
 			},
 			{

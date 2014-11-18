@@ -30,7 +30,13 @@ var MenuScreen = (function(exports) {
 					align: 'center',
 					border: 0
 				},
-				color: Colors.TITLE_TEXT,
+				material: {
+					color: Colors.TITLE_TEXT,
+					renderScript: {
+						id: 'game/assets/render-scripts/text.js',
+						mode: 'default'
+					}
+				},
 				z: 1
 			});
 		}

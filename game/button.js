@@ -1,6 +1,9 @@
 var Button = (function(exports) {
 	exports.make = function(id, pos, size, text, onClick, seed) {
 		var cloud = UIUtils.animatedCloud(id, pos, size, 10, seed);
+		cloud.material.color = Colors.BUTTON;
+		cloud.highlightable = true;
+
 		var button = Utils.setPropObj(cloud, 'button', { pressed: false, onClick: onClick });
 		var text = {
 			id: 'text' + id,
@@ -10,9 +13,15 @@ var Button = (function(exports) {
 				text: text,
 				size: 1.7,
 				align: 'center',
-				border: 0
+				border: { width: 0 }
 			},
-			color: Colors.BUTTON_TEXT,
+			material: {
+				color: Colors.BUTTON_TEXT,
+				renderScript: {
+					id: 'game/assets/render-scripts/text.js',
+					mode: 'default'
+				}
+			},
 			z: 11
 		};
 		return [button, text];

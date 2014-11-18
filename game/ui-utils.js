@@ -37,30 +37,13 @@ var UIUtils = (function(exports) {
 				border: 5
 			},
 			material: {
-				color: Colors.BUTTON,
+				color: Colors.BUTTON.normal,
 				renderScript: {
 					id: 'game/assets/render-scripts/cloud.js',
 					mode: 'animated'
 				}
 			},
-			highlightable: true,
-			z: z,
-/*			animation: [
-				{
-					type: 'geometry',
-					apply: function(time, geom) {
-						var newCircles = cloudCircles.map(function(circle, index) {
-							var params = radiusAnimationParams[index];
-							var f = params.frequency;
-							var a = params.amplitude;
-							var off = params.offset;
-							var r = (Math.sin(f * (time + off) * (2 * Math.PI)) * a + 1) * circle.radius;
-							return Utils.mergeObjects(circle, { radius: r });
-						});
-						return Utils.mergeObjects(geom, { circles: newCircles });
-					}
-				}
-			] */
+			z: z
 		};
 	};
 

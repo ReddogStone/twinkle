@@ -13,9 +13,12 @@ var TextHelper = (function(exports) {
 					align: 'center',
 					border: 0
 				},
-				color: { 
-					primary: 'white',
-					secondary: 'white',
+				material: {
+					color: { primary: 'white', secondary: 'white' },
+					renderScript: {
+						id: 'game/assets/render-scripts/text.js',
+						mode: 'default'
+					}
 				},
 				z: 1
 			});

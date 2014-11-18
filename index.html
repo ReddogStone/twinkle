@@ -67,14 +67,22 @@ function getMousePos(canvas, evt) {
 	return { x: evt.clientX - rect.left, y: evt.clientY - rect.top };
 }
 
+var renderScriptUrls = [
+	'game/assets/render-scripts/star.js',
+	'game/assets/render-scripts/cloud.js',
+	'game/assets/render-scripts/text.js'
+];
+
 function onload() {
 	var renderScriptCache = {};
-	ScriptLoader.load('game/assets/render-scripts/star.js', {}, function(err, script, cache) {
-		ScriptLoader.load('game/assets/render-scripts/cloud.js', cache, function(err, script, cache) {
+	renderScriptUrls.forEach(function(url) {
+		ScriptLoader.load(url, {}, function(err, script, cache) {
 			if (err) {
-				return console.log('ERROR IN SCRIPT: ' + err);
+				return console.log(err);
 			}
-			renderScriptCache = cache;
+			Object.keys(cache).forEach(function(id) {
+				renderScriptCache[id] = cache[id];
+			});
 		});
 	});
 
